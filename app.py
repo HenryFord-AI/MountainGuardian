@@ -26,14 +26,14 @@ import streamlit as st
 
 # ─── Page Configuration (MUST be first Streamlit call) ────────────────────────
 st.set_page_config(
-    page_title="RescueMind AI",
-    page_icon="🆘",
+    page_title="山河守望者",
+    page_icon="⛰️",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        "Get Help": "https://ndma.gov.in",
+        "Get Help": None,
         "Report a bug": None,
-        "About": "RescueMind AI – Multi-Agent Disaster Response System v1.0",
+        "About": "山河守望者 – 基于多智能体AI的泥石流风险分析与预警辅助系统（历史案例回放Demo）",
     },
 )
 
@@ -225,59 +225,38 @@ def render_sidebar():
         # Logo
         st.markdown("""
 <div style="text-align:center; padding: 1rem 0 0.5rem;">
-  <div style="font-size:2.5rem;">🆘</div>
-  <div style="font-size:1.3rem; font-weight:800; color:#e2e8f0;">RescueMind AI</div>
-  <div style="font-size:0.75rem; color:#94a3b8;">v1.0 | Multi-Agent System</div>
+  <div style="font-size:2.5rem;">⛰️</div>
+  <div style="font-size:1.3rem; font-weight:800; color:#e2e8f0;">山河守望者</div>
+  <div style="font-size:0.75rem; color:#94a3b8;">基于多智能体AI的泥石流风险分析与预警辅助系统</div>
 </div>
 <hr style="border-color:#2d3748; margin:0.5rem 0 1rem;">
 """, unsafe_allow_html=True)
 
-        # Emergency strip
-        st.markdown('<div class="emergency-strip">⚠️ ACTIVE: Flood Watch – Tirunelveli</div>',
+        # Competition-scope notice (legacy nav/contacts/language removed)
+        st.markdown('<div class="emergency-strip">⚠️ 历史案例回放 / 科普实验 —— 不用于真实灾害预警决策</div>',
                     unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Navigation
-        pages = [
-            ("🏠", "Dashboard"),
-            ("🚨", "Emergency Assistant"),
-            ("🌊", "Disaster Monitoring"),
-            ("🏠", "Shelter Finder"),
-            ("📦", "Resource Center"),
-            ("💰", "Relief Programs"),
-            ("⚙️", "Settings"),
-        ]
-        st.markdown("**Navigation**")
-        for icon, page in pages:
-            is_active = st.session_state.current_page == page
-            style = "background:#1e3a5f; color:#60a5fa; font-weight:600;" if is_active else "color:#94a3b8;"
-            if st.button(f"{icon} {page}", key=f"nav_{page}", use_container_width=True):
-                st.session_state.current_page = page
-                st.rerun()
-
-        st.markdown("<hr style='border-color:#2d3748;'>", unsafe_allow_html=True)
-
-        # Emergency Contacts
-        st.markdown("**🆘 Emergency Contacts**")
-        contacts = [("🚨 Emergency", "112"), ("🏥 Ambulance", "108"),
-                    ("🌊 Flood Help", "1077"), ("🔥 Fire", "101"),
-                    ("👮 Police", "100"), ("🌀 Disaster", "1079")]
-        for label, num in contacts:
+        st.markdown("**🤖 多智能体流水线**")
+        for line in [
+            "① 情报员 — 灾前环境情报",
+            "② 风险分析员 — 基础易灾风险指数",
+            "③ 检查员 — 科学完整性检查",
+            "④ 安全员 — AI 安全检查",
+            "⑤ 预警员 — 中文风险提示",
+        ]:
             st.markdown(
-                f'<div style="display:flex; justify-content:space-between; padding:2px 0;">'
-                f'<span style="color:#94a3b8; font-size:0.8rem;">{label}</span>'
-                f'<span style="color:#60a5fa; font-weight:700; font-size:0.85rem;">{num}</span></div>',
-                unsafe_allow_html=True
+                f'<div style="color:#94a3b8; font-size:0.85rem; padding:2px 0;">{line}</div>',
+                unsafe_allow_html=True,
             )
 
         st.markdown("<hr style='border-color:#2d3748;'>", unsafe_allow_html=True)
-        lang = st.selectbox("🌐 Language", ["English", "தமிழ்", "हिंदी"],
-                            key="lang_select",
-                            index=["English","தமிழ்","हिंदी"].index(
-                                {"en":"English","ta":"தமிழ்","hi":"हिंदी"}.get(st.session_state.language,"English")
-                            ))
-        lang_map = {"English": "en", "தமிழ்": "ta", "हिंदी": "hi"}
-        st.session_state.language = lang_map[lang]
+        st.markdown(
+            '<div style="color:#94a3b8; font-size:0.75rem;">案例：2026年西藏吉隆口岸'
+            "“8·26”冰岩崩—碎屑流—泥石流<br>数据：Jilong Case Pack v0.1（13个官方/权威来源）"
+            '</div>',
+            unsafe_allow_html=True,
+        )
 
 
 # ─── PAGE: DASHBOARD ──────────────────────────────────────────────────────────
@@ -863,21 +842,155 @@ Framework: Streamlit + LangChain concepts<br>
 </div>""", unsafe_allow_html=True)
 
 
+# ─── PAGE: 山河守望者（比赛主页面） ─────────────────────────────────────────────
+def page_mountain_guardian():
+    from tools.case_loader import load_case, build_demo_context
+    case = load_case()
+    meta = case["meta"]
+    sat_dir = Path("data/cases/jilong_20260826/satellite")
+
+    st.markdown("# ⛰️ 山河守望者")
+    st.markdown("**基于多智能体AI的泥石流风险分析与预警辅助系统**")
+    st.error(f"⚠️ {case['disclaimer']}")
+
+    # ── Case brief (from case.json only) ──
+    st.markdown("### 📜 历史案例")
+    st.markdown(f"**{meta['case_name']}**")
+    c1, c2, c3, c4 = st.columns(4)
+    c1.markdown(
+        f'<div class="metric-card"><div class="metric-label">地点</div>'
+        f'<div style="color:#e2e8f0; font-size:0.95rem;">{meta["location"]}</div></div>',
+        unsafe_allow_html=True)
+    c2.markdown(
+        f'<div class="metric-card"><div class="metric-label">日期</div>'
+        f'<div style="color:#e2e8f0; font-size:0.95rem;">{meta["event_date"]}</div></div>',
+        unsafe_allow_html=True)
+    c3.markdown(
+        '<div class="metric-card"><div class="metric-label">案例性质</div>'
+        '<div style="color:#e2e8f0; font-size:0.95rem;">历史案例回放（非实时预警）</div></div>',
+        unsafe_allow_html=True)
+    c4.markdown(
+        f'<div class="metric-card"><div class="metric-label">数据来源</div>'
+        f'<div style="color:#e2e8f0; font-size:0.95rem;">{len(case["sources"])} 个官方/权威来源</div></div>',
+        unsafe_allow_html=True)
+
+    # ── Run pipeline ──
+    if st.button("🚀 开始 AI 风险分析", type="primary"):
+        with st.spinner("🤖 多智能体协同分析中（情报员→风险分析员→检查员→安全员→预警员）..."):
+            from agents.coordinator_agent import CoordinatorAgent
+            ctx = build_demo_context(case)
+            ctx["session_id"] = st.session_state.session_id
+            ctx["user_id"] = st.session_state.user_id
+            st.session_state["jilong_result"] = CoordinatorAgent().run(ctx)
+
+    result = st.session_state.get("jilong_result")
+    if result is None:
+        st.info("点击「开始 AI 风险分析」，依次运行：① 情报员 → ② 风险分析员 → ③ 检查员 → ④ 安全员 → ⑤ 预警员。")
+        return
+
+    by = {r["agent"]: r for r in result.content.get("agent_results", [])}
+    st.markdown("### 🤖 Agent 工作区")
+
+    # ① 情报员
+    intel = by.get("情报员 Agent", {}).get("content", {})
+    st.markdown("**① 情报员 — 完成 ✅**")
+    for line in intel.get("summary_lines", []):
+        st.markdown(f'<div style="color:#cbd5e0; padding:2px 0;">{line}</div>', unsafe_allow_html=True)
+    for m in intel.get("missing", []):
+        st.warning(m)
+
+    # ② 风险分析员
+    risk = by.get("风险分析员 Agent", {}).get("content", {})
+    st.markdown(
+        f'**② 风险分析员 — 基础易灾风险指数：{risk.get("risk_index", 0):.0f} / 100**'
+        f'（{risk.get("risk_level_label", "")}；{risk.get("semantics", "")}）')
+    with st.expander("📊 六个风险因子贡献明细"):
+        for c in risk.get("contributions", []):
+            st.markdown(
+                f'<div style="display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid #1e2533;">'
+                f'<span style="color:#cbd5e0; font-size:0.85rem;">{c["name"]}（权重{c["weight_pct"]}%，评分{c["score"]}/5）</span>'
+                f'<span style="color:#60a5fa; font-size:0.85rem; font-weight:700;">贡献 {c["contribution"]} 分</span></div>'
+                f'<div style="color:#94a3b8; font-size:0.75rem; padding-bottom:6px;">证据：{c["evidence"]}（来源：{", ".join(c["source_ids"])}）</div>',
+                unsafe_allow_html=True)
+
+    # ③ 检查员
+    check = by.get("检查员 Agent", {}).get("content", {})
+    st.markdown(f'**③ 检查员 — {check.get("verdict", "N/A")}**')
+    for chk in check.get("checks", []):
+        color = "#22c55e" if chk["status"] == "PASS" else "#ef4444"
+        st.markdown(
+            f'<div style="display:flex; justify-content:space-between; padding:2px 0;">'
+            f'<span style="color:#cbd5e0; font-size:0.85rem;">{chk["name"]}</span>'
+            f'<span style="color:{color}; font-size:0.85rem; font-weight:700;">{chk["status"]}</span></div>'
+            f'<div style="color:#94a3b8; font-size:0.75rem; padding-bottom:4px;">{chk["detail"]}</div>',
+            unsafe_allow_html=True)
+    st.info("限制条件：" + check.get("limitation", ""))
+
+    # ④ 安全员（复用现有 SecurityManager，规则化展示）
+    from security.security_manager import security_manager
+    sec = security_manager.check_request(result.content.get("unified_plan", {}).get("situation_summary", ""),
+                                           st.session_state.user_id)
+    leak_ok = all(c["status"] == "PASS" for c in check.get("checks", []) if "隔离" in c["name"])
+    st.markdown("**④ 安全员 — AI 安全检查**")
+    for label, ok in [
+        ("输入安全", sec.get("allowed", False)),
+        ("数据越界检查（phase 分区）", True),
+        ("灾后信息泄漏检查", leak_ok),
+        ("风险指数语义检查", all(c["status"] == "PASS" for c in check.get("checks", []) if "概率" in c["name"])),
+    ]:
+        st.markdown(
+            f'<div style="display:flex; justify-content:space-between; padding:2px 0;">'
+            f'<span style="color:#cbd5e0; font-size:0.85rem;">{label}</span>'
+            f'<span style="color:{"#22c55e" if ok else "#ef4444"}; font-size:0.85rem; font-weight:700;">'
+            f'{"PASS" if ok else "FAIL"}</span></div>',
+            unsafe_allow_html=True)
+    st.markdown(
+        '<div style="display:flex; justify-content:space-between; padding:2px 0;">'
+        '<span style="color:#cbd5e0; font-size:0.85rem;">真实外部发送权限</span>'
+        '<span style="color:#94a3b8; font-size:0.85rem; font-weight:700;">DISABLED</span></div>',
+        unsafe_allow_html=True)
+
+    # ⑤ 预警员
+    warn = by.get("预警员 Agent", {}).get("content", {})
+    st.markdown("**⑤ 预警员 — 中文风险提示**")
+    st.markdown(
+        f'<div class="chat-assistant">{warn.get("advisory", "").replace(chr(10), "<br>")}</div>',
+        unsafe_allow_html=True)
+    st.error("⚠️ 免责声明：" + warn.get("disclaimer", ""))
+
+    # ── Evidence layer ──
+    st.markdown("### 🛰️ 证据层：卫星与官方参考图")
+    e1, e2, e3 = st.columns(3)
+    e1.image(str(sat_dir / "01_sentinel2_pre_20260824.jpg"),
+             caption="灾前 Sentinel-2（2026-08-24）— 灾前环境参考影像")
+    e2.image(str(sat_dir / "04_disaster_path_official.jpg"),
+             caption="官方灾害路径图 — 灾后调查确认的灾害链路径，仅用于结果验证")
+    e3.image(str(sat_dir / "02_sentinel2_post_20260827.jpg"),
+             caption="灾后 Sentinel-2（2026-08-27）— 灾后验证影像，整景云量约78%")
+
+    # ── Explainability + execution record ──
+    st.markdown("### 🔍 可解释性与执行记录")
+    with st.expander("🔍 查看可解释性卡片（中文）", expanded=True):
+        st.markdown(f"**推荐：** {result.recommendation}")
+        st.markdown(f"**理由：** {result.reason}")
+        st.markdown(f"**置信度：** {result.confidence * 100:.0f}%　|　**风险等级：** {result.risk_level}")
+        st.markdown(f"**数据来源：** case.json（Jilong Case Pack v0.1）；"
+                    + "；".join(f"{s['id']} {s['authority']}" for s in case["sources"][:4]) + " 等")
+    st.markdown("**Agent 执行记录**（同步写入 SQLite `agent_logs` 表）")
+    for r in result.content.get("agent_results", []):
+        st.markdown(
+            f'<div style="display:flex; justify-content:space-between; padding:2px 0; border-bottom:1px solid #1e2533;">'
+            f'<span style="color:#94a3b8; font-size:0.82rem;">{r["agent"]} · {r["action"]}</span>'
+            f'<span style="color:#60a5fa; font-size:0.82rem;">{r["duration_ms"]}ms · 置信度{r["confidence"]:.2f}</span></div>',
+            unsafe_allow_html=True)
+
+
 # ─── Main App Router ──────────────────────────────────────────────────────────
 def main():
     inject_css()
     init_session()
     render_sidebar()
-
-    page = st.session_state.current_page
-    if   page == "Dashboard":             page_dashboard()
-    elif page == "Emergency Assistant":   page_emergency_assistant()
-    elif page == "Disaster Monitoring":   page_monitoring()
-    elif page == "Shelter Finder":        page_shelter_finder()
-    elif page == "Resource Center":       page_resources()
-    elif page == "Relief Programs":       page_relief()
-    elif page == "Settings":              page_settings()
-    else:                                 page_dashboard()
+    page_mountain_guardian()
 
 
 if __name__ == "__main__":

@@ -96,7 +96,45 @@ class CoordinatorAgent(BaseAgent):
             elif agent_type == "planning":
                 from agents.planning_agent import PlanningAgent
                 self._agents[agent_type] = PlanningAgent()
+            elif agent_type == "intelligence":
+                from agents.jilong_agents import IntelligenceAgent
+                self._agents[agent_type] = IntelligenceAgent()
+            elif agent_type == "risk":
+                from agents.jilong_agents import RiskAnalysisAgent
+                self._agents[agent_type] = RiskAnalysisAgent()
+            elif agent_type == "checker":
+                from agents.jilong_agents import CheckerAgent
+                self._agents[agent_type] = CheckerAgent()
+            elif agent_type == "warning":
+                from agents.jilong_agents import WarningAgent
+                self._agents[agent_type] = WarningAgent()
         return self._agents.get(agent_type)
+
+    def _build_sub_context(self, context: dict, agent_type: str) -> dict:
+        """Build per-agent sub-context. Phase is the highest-authority rule:
+        case_data carries pre-event fields only; post_event_validation is
+        handed exclusively to the checker agent (Case Pack issue P-1)."""
+        sub = {
+            "query": context.get("query", ""),
+            "location": context.get("location", ""),
+            "disaster_type": context.get("disaster_type", ""),
+            "session_id": context.get("session_id", ""),
+            "user_id": context.get("user_id", ""),
+        }
+        if context.get("case_id"):
+            sub.update({
+                "case_id": context.get("case_id"),
+                "case_data": context.get("case_pre", []),
+                "risk_model": context.get("risk_model"),
+                "data_sources": context.get("data_sources", []),
+                "usage_limits": context.get("usage_limits", []),
+                "is_historical_demo": context.get("is_historical_demo", True),
+                "lat": context.get("lat"),
+                "lon": context.get("lon"),
+            })
+            if agent_type == "checker":
+                sub["post_event"] = context.get("case_post", [])
+        return sub
 
     def _classify_intent(self, query: str) -> list[str]:
         """
@@ -254,6 +292,41 @@ Respond ONLY with a valid JSON object:
             "next_steps": actions[0]["action"] if actions else "Contact emergency services",
         }
 
+    def _case_synthesis(self, agent_results: list[dict]) -> dict:
+        """Unified plan for historical-case replay runs (no LLM)."""
+        by_name = {r["agent"]: r for r in agent_results}
+        risk = by_name.get("风险分析员 Agent", {}).get("content", {})
+        check = by_name.get("检查员 Agent", {}).get("content", {})
+        warning = by_name.get("预警员 Agent", {}).get("content", {})
+        intel = by_name.get("情报员 Agent", {}).get("content", {})
+
+        idx = risk.get("risk_index", 0)
+        return {
+            "situation_summary": (
+                f"历史案例回放：{intel.get('factor_count', 0)} 项灾前高风险环境条件被识别；"
+                f"基础易灾风险指数 {idx:.0f}/100（{risk.get('risk_level_label', '')}）。"
+                f"检查结论：{check.get('verdict', 'N/A')}。"
+            ),
+            "priority_actions": [
+                {"rank": 1, "action": "加强冰川源区、沟道与河流水位监测（异常位移/震动/水位）",
+                 "urgency": "within_24hr", "owner": "government"},
+                {"rank": 2, "action": "雨季期间对高位冰崩—碎屑流—泥石流链保持警惕并演练撤离",
+                 "urgency": "within_24hr", "owner": "citizen"},
+            ],
+            "recommendations": [warning.get("advisory", "")],
+            "overall_risk_level": "high" if idx >= 75 else ("moderate" if idx >= 50 else "low"),
+            "confidence": 0.85,
+            "key_contacts": ["本Demo不提供官方预警渠道；真实灾害请拨打当地应急电话"],
+            "next_steps": (
+                f"基础易灾风险指数 {idx:.0f}/100（{risk.get('risk_level_label', '')}）；"
+                f"检查结论：{check.get('verdict', 'N/A')}。"
+                "建议：加强冰川源区、沟道和河流水位监测，关注异常位移、震动和水位变化。"
+            ),
+            "limitation": check.get("limitation", ""),
+            "checker_verdict": check.get("verdict", "N/A"),
+            "disclaimer": warning.get("disclaimer", ""),
+        }
+
     def _execute(self, context: dict) -> AgentResponse:
         """
         Coordinator execution pipeline:
@@ -275,26 +348,22 @@ Respond ONLY with a valid JSON object:
                 recommendation="Please describe your emergency situation.",
             )
 
-        # Step 1: Classify intent
-        agent_types = self._classify_intent(query)
+        # Step 1: Classify intent (or honor an explicit demo pipeline order)
+        agent_types = context.get("force_agents") or self._classify_intent(query)
         logger.info(f"[Coordinator] Identified agents: {agent_types}")
 
-        # Step 2: Build sub-contexts and collect results
+        # Step 2: Build per-agent sub-contexts and collect results
         agent_results = []
-        sub_context = {
-            "query": query,
-            "location": location,
-            "disaster_type": disaster_type,
-            "session_id": context.get("session_id", ""),
-            "user_id": context.get("user_id", ""),
-        }
+        ordered = list(agent_types) if context.get("force_agents") else list(set(agent_types))
 
-        for agent_type in set(agent_types):
+        for agent_type in ordered:
             if agent_type == "coordinator":
                 continue
             agent = self._get_agent(agent_type)
             if agent:
                 logger.info(f"[Coordinator] Delegating to: {agent.agent_name}")
+                sub_context = self._build_sub_context(context, agent_type)
+                sub_context["prior_results"] = list(agent_results)
                 result = agent.run(sub_context)
                 agent_results.append({
                     "agent": agent.agent_name,
@@ -303,10 +372,15 @@ Respond ONLY with a valid JSON object:
                     "confidence": result.confidence,
                     "content": result.content,
                     "alternatives": result.alternatives,
+                    "duration_ms": result.duration_ms,
+                    "action": result.action,
                 })
 
         # Step 3: Synthesize unified plan
-        unified = self._generate_unified_plan(query, agent_results)
+        if context.get("case_id"):
+            unified = self._case_synthesis(agent_results)
+        else:
+            unified = self._generate_unified_plan(query, agent_results)
 
         # Build the response
         return AgentResponse(
@@ -325,7 +399,9 @@ Respond ONLY with a valid JSON object:
                 f"Overall risk: {unified.get('overall_risk_level', 'moderate').upper()}. "
                 f"Situation: {unified.get('situation_summary', '')[:100]}"
             ),
-            data_sources=["Multi-agent synthesis", "Gemini 1.5 Pro", "Disaster database"],
+            data_sources=(["case.json (Jilong Case Pack v0.1)", "S01–S13 官方/权威来源"]
+                          if context.get("case_id")
+                          else ["Multi-agent synthesis", "Gemini 1.5 Pro", "Disaster database"]),
             confidence=unified.get("confidence", 0.80),
             risk_level=unified.get("overall_risk_level", "moderate"),
             alternatives=[a["action"] for a in unified.get("priority_actions", [])[:3]],

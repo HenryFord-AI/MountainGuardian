@@ -134,7 +134,10 @@ class DisasterMonitoringAgent(BaseAgent):
             rows = cursor.fetchall()
             conn.close()
             for row in rows:
-                events.append(dict(row))
+                ev = dict(row)
+                # DB rows use disaster_type; demo events use type – unify for assessment
+                ev.setdefault("type", ev.get("disaster_type"))
+                events.append(ev)
         except Exception as e:
             logger.warning(f"[Monitoring] DB fetch error: {e}")
 
