@@ -25,6 +25,9 @@ database/*.db
 database/*.db-shm
 database/*.db-wal
 
+# Case pack human-reference office docs (binary, not runtime inputs)
+data/cases/*/reference/
+
 # Logs
 logs/
 *.log

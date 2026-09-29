@@ -1,0 +1,1097 @@
+{
+  "pack_version": "0.1",
+  "created_for": "MountainGuardian / 山河守望者",
+  "case_id": "JILONG_20260826",
+  "purpose": "支撑多智能体历史案例回放、风险识别、可解释性展示和比赛研究报告；非真实预警产品。",
+  "core_principles": [
+    "严格区分灾前可用输入与灾后验证数据，避免信息泄漏。",
+    "0-100分为演示性“风险/易灾指数”，不是灾害发生概率。",
+    "厄尔尼诺只作为宏观气候背景，不作为吉隆8·26灾害直接因果或评分变量。",
+    "若缺少源区实时位移/震动等动态前兆，不声称能够提前数分钟准确预警。",
+    "所有数据保留来源与可信度，检查员Agent负责追溯。"
+  ],
+  "data_fields": [
+    {
+      "id": "C001",
+      "name_zh": "案例ID",
+      "key": "case_id",
+      "value": "JILONG_20260826",
+      "unit": "",
+      "phase": "metadata",
+      "confidence": "高",
+      "source_ids": [
+        "S01"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "唯一标识"
+    },
+    {
+      "id": "C002",
+      "name_zh": "案例名称",
+      "key": "case_name",
+      "value": "2026年西藏吉隆口岸“8·26”冰岩崩-碎屑流-泥石流灾害",
+      "unit": "",
+      "phase": "metadata",
+      "confidence": "高",
+      "source_ids": [
+        "S02"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "使用官方灾害链表述"
+    },
+    {
+      "id": "C003",
+      "name_zh": "展示中心位置",
+      "key": "location",
+      "value": "西藏日喀则市吉隆县吉隆口岸（中尼边境）",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S01"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "案例展示位置"
+    },
+    {
+      "id": "C004",
+      "name_zh": "遥感页面中心纬度",
+      "key": "port_lat",
+      "value": 28.279,
+      "unit": "degN",
+      "phase": "pre_event_static",
+      "confidence": "中",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Intelligence"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "公开遥感专题中心点，不作为官方测绘坐标"
+    },
+    {
+      "id": "C005",
+      "name_zh": "遥感页面中心经度",
+      "key": "port_lon",
+      "value": 85.379,
+      "unit": "degE",
+      "phase": "pre_event_static",
+      "confidence": "中",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Intelligence"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "公开遥感专题中心点，不作为官方测绘坐标"
+    },
+    {
+      "id": "C006",
+      "name_zh": "事件日期",
+      "key": "event_date",
+      "value": "2026-08-26",
+      "unit": "",
+      "phase": "metadata",
+      "confidence": "高",
+      "source_ids": [
+        "S01"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": ""
+    },
+    {
+      "id": "C007",
+      "name_zh": "公开通报事件时间",
+      "key": "event_time_public",
+      "value": "约10:30",
+      "unit": "北京时间",
+      "phase": "metadata",
+      "confidence": "高",
+      "source_ids": [
+        "S01"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "早期和多数通报口径"
+    },
+    {
+      "id": "C008",
+      "name_zh": "后续发布的源区断裂时间",
+      "key": "source_fracture_time_later_report",
+      "value": "约10:52",
+      "unit": "北京时间",
+      "phase": "post_event_validation",
+      "confidence": "中",
+      "source_ids": [
+        "S05"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "与早期10:30通报存在时间口径差异；Demo不依赖分钟级时间"
+    },
+    {
+      "id": "C009",
+      "name_zh": "源区位置描述",
+      "key": "source_area",
+      "value": "尼泊尔境内，东林藏布河支流郭巴峡曲支沟错坚河上游",
+      "unit": "",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S02"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "灾后遥感与调查确认"
+    },
+    {
+      "id": "C010",
+      "name_zh": "高海拔冰川源区",
+      "key": "glacierized_source_zone",
+      "value": "是",
+      "unit": "bool",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S03",
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "静态易灾背景，不等于临灾前兆"
+    },
+    {
+      "id": "C011",
+      "name_zh": "源区海拔",
+      "key": "source_elevation_m",
+      "value": 5200,
+      "unit": "m",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S03",
+        "S04",
+        "S05"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "约值"
+    },
+    {
+      "id": "C012",
+      "name_zh": "口岸海拔",
+      "key": "port_elevation_m",
+      "value": 1800,
+      "unit": "m",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04",
+        "S05"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "约值"
+    },
+    {
+      "id": "C013",
+      "name_zh": "源区至口岸垂直高差",
+      "key": "vertical_drop_m",
+      "value": 3400,
+      "unit": "m",
+      "phase": "derived_pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S03",
+        "S04",
+        "S05"
+      ],
+      "agent_use": [
+        "Risk",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "由5200-1800计算；报告可写“超过3000米”"
+    },
+    {
+      "id": "C014",
+      "name_zh": "地形类型",
+      "key": "terrain_class",
+      "value": "极高山-深切峡谷，坡陡沟窄",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "强势能和通道约束的重要因素"
+    },
+    {
+      "id": "C015",
+      "name_zh": "沟道松散物源",
+      "key": "loose_material_supply",
+      "value": "冰碛物、岩土碎屑等松散堆积物丰富",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S03",
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "可被高速冰崩体铲刮裹挟"
+    },
+    {
+      "id": "C016",
+      "name_zh": "区域构造背景",
+      "key": "tectonic_context",
+      "value": "印度板块与欧亚板块碰撞边界附近，断裂/节理发育",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "作为长期稳定性背景，不用于临灾时间预测"
+    },
+    {
+      "id": "C017",
+      "name_zh": "上游冰湖数量",
+      "key": "upstream_glacial_lake_count",
+      "value": 55,
+      "unit": "count",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "东林藏布河上游流域统计"
+    },
+    {
+      "id": "C018",
+      "name_zh": "上游冰湖总面积",
+      "key": "upstream_glacial_lake_area_km2",
+      "value": 3.39,
+      "unit": "km2",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "背景指标；本次事件不是冰湖溃决"
+    },
+    {
+      "id": "C019",
+      "name_zh": "区域年平均降水",
+      "key": "annual_precip_mm",
+      "value": 1000,
+      "unit": "mm/year",
+      "phase": "pre_event_context",
+      "confidence": "中-高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "区域气候背景约值"
+    },
+    {
+      "id": "C020",
+      "name_zh": "主要雨季",
+      "key": "rainy_season",
+      "value": "6-9月",
+      "unit": "months",
+      "phase": "pre_event_context",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "季风雨季背景"
+    },
+    {
+      "id": "C021",
+      "name_zh": "夏季降水占比",
+      "key": "summer_precip_share_pct",
+      "value": 80,
+      "unit": "%",
+      "phase": "pre_event_context",
+      "confidence": "中-高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "区域气候背景；不等于事发当日实测降水"
+    },
+    {
+      "id": "C022",
+      "name_zh": "历史相邻灾害日期",
+      "key": "prior_event_date",
+      "value": "2025-07-08",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "同一区域冰湖溃决引发山洪泥石流"
+    },
+    {
+      "id": "C023",
+      "name_zh": "历史相邻灾害类型",
+      "key": "prior_event_type",
+      "value": "冰湖溃决→山洪泥石流",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk"
+      ],
+      "use_in_demo_risk_score": true,
+      "notes": "说明区域具有冰冻圈链式灾害历史"
+    },
+    {
+      "id": "C024",
+      "name_zh": "历史相邻灾害影响",
+      "key": "prior_event_impact",
+      "value": "17人失联，中尼友谊桥被冲毁",
+      "unit": "",
+      "phase": "pre_event_static",
+      "confidence": "高",
+      "source_ids": [
+        "S04"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "仅用于历史背景"
+    },
+    {
+      "id": "C025",
+      "name_zh": "2026年8月ENSO状态",
+      "key": "enso_status_aug2026",
+      "value": "El Niño firmly established / 厄尔尼诺已确立并增强",
+      "unit": "",
+      "phase": "context_only",
+      "confidence": "高",
+      "source_ids": [
+        "S10"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "只作宏观背景，不作为本次灾害直接原因"
+    },
+    {
+      "id": "C026",
+      "name_zh": "Niño 3.4指数",
+      "key": "nino34_aug2026",
+      "value": 1.89,
+      "unit": "degC anomaly",
+      "phase": "context_only",
+      "confidence": "高",
+      "source_ids": [
+        "S11"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "NOAA 2026年8月值；不进入吉隆评分"
+    },
+    {
+      "id": "C027",
+      "name_zh": "MEI v2指数",
+      "key": "mei_v2_aug2026",
+      "value": 2.54,
+      "unit": "index",
+      "phase": "context_only",
+      "confidence": "高",
+      "source_ids": [
+        "S11"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "NOAA 2026年8月值；不进入吉隆评分"
+    },
+    {
+      "id": "C028",
+      "name_zh": "灾害直接触发",
+      "key": "actual_trigger",
+      "value": "高位冰川/冰岩体失稳崩塌",
+      "unit": "",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S02",
+        "S04",
+        "S05"
+      ],
+      "agent_use": [
+        "Checker",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "灾后确认，绝不能作为灾前预测输入"
+    },
+    {
+      "id": "C029",
+      "name_zh": "实际灾害链",
+      "key": "actual_disaster_chain",
+      "value": "高位冰崩→高速碎屑流→泥石流",
+      "unit": "",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S02",
+        "S03",
+        "S04"
+      ],
+      "agent_use": [
+        "Checker",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "用于事后验证"
+    },
+    {
+      "id": "C030",
+      "name_zh": "灾害运动距离",
+      "key": "actual_runout_km",
+      "value": 22,
+      "unit": "km",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S05"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "后续官方发布约值"
+    },
+    {
+      "id": "C031",
+      "name_zh": "灾害传播时间",
+      "key": "actual_travel_time_min",
+      "value": "6-7",
+      "unit": "min",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S03",
+        "S04",
+        "S05"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "事后验证"
+    },
+    {
+      "id": "C032",
+      "name_zh": "平均运动速度",
+      "key": "actual_avg_speed_mps",
+      "value": ">50",
+      "unit": "m/s",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S02",
+        "S04"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "约180km/h量级"
+    },
+    {
+      "id": "C033",
+      "name_zh": "灾害影响面积",
+      "key": "actual_affected_area_km2",
+      "value": 0.7,
+      "unit": "km2",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S05"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "灾后影响结果"
+    },
+    {
+      "id": "C034",
+      "name_zh": "受损建筑数量",
+      "key": "actual_structures_destroyed",
+      "value": 27,
+      "unit": "count",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S05"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "灾后影响结果"
+    },
+    {
+      "id": "C035",
+      "name_zh": "卫星灾前成像时间",
+      "key": "satellite_pre_datetime",
+      "value": "2026-08-24 05:11",
+      "unit": "UTC",
+      "phase": "pre_event_evidence",
+      "confidence": "中-高",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "Sentinel-2 L2A公开场景"
+    },
+    {
+      "id": "C036",
+      "name_zh": "卫星灾后成像时间",
+      "key": "satellite_post_datetime",
+      "value": "2026-08-27 05:10",
+      "unit": "UTC",
+      "phase": "post_event_validation",
+      "confidence": "中-高",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "Sentinel-2 L2A公开场景"
+    },
+    {
+      "id": "C037",
+      "name_zh": "卫星分辨率",
+      "key": "satellite_resolution_m",
+      "value": 10,
+      "unit": "m/pixel",
+      "phase": "pre_event_evidence",
+      "confidence": "高",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "真彩色关键波段10m"
+    },
+    {
+      "id": "C038",
+      "name_zh": "灾后影像整景云量",
+      "key": "satellite_post_cloud_pct",
+      "value": 78,
+      "unit": "%",
+      "phase": "post_event_validation",
+      "confidence": "中-高",
+      "source_ids": [
+        "S09"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "云下区域不可判读"
+    },
+    {
+      "id": "C039",
+      "name_zh": "灾后可见遥感变化",
+      "key": "satellite_visible_change",
+      "value": "河槽明显展宽、泥沙覆盖范围扩大、物质沿狭窄河谷输移",
+      "unit": "",
+      "phase": "post_event_validation",
+      "confidence": "中",
+      "source_ids": [
+        "S09",
+        "S13"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "公开光学影像目视变化；受云影响"
+    },
+    {
+      "id": "C040",
+      "name_zh": "官方卫星应急数据量",
+      "key": "official_satellite_scene_count",
+      "value": "5景灾前 + 10景灾后",
+      "unit": "scene",
+      "phase": "post_event_validation",
+      "confidence": "高",
+      "source_ids": [
+        "S08"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "说明遥感是官方应急研判的重要数据层"
+    },
+    {
+      "id": "C041",
+      "name_zh": "推荐实时监测信号",
+      "key": "monitoring_signals",
+      "value": "冰岩位移；岩土松动；地表震动；河道水位；断面宽度；天气；冰川消融；沟道堆积物变化",
+      "unit": "",
+      "phase": "design_input",
+      "confidence": "高",
+      "source_ids": [
+        "S06",
+        "S07"
+      ],
+      "agent_use": [
+        "Intelligence",
+        "Risk",
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "用于未来系统设计；不是2026灾前已公开取得的数据"
+    },
+    {
+      "id": "C042",
+      "name_zh": "灾前动态源区传感数据",
+      "key": "pre_event_dynamic_sensor_data",
+      "value": "公开资料中未找到",
+      "unit": "",
+      "phase": "missing_input",
+      "confidence": "高",
+      "source_ids": [
+        "S06",
+        "S07"
+      ],
+      "agent_use": [
+        "Checker"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "这是无法做分钟级真实预警的关键缺口"
+    },
+    {
+      "id": "C043",
+      "name_zh": "厄尔尼诺与本次灾害直接因果",
+      "key": "enso_direct_causality",
+      "value": "未证实",
+      "unit": "",
+      "phase": "scientific_boundary",
+      "confidence": "高",
+      "source_ids": [
+        "S02",
+        "S10"
+      ],
+      "agent_use": [
+        "Checker",
+        "Safety"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "禁止Demo或报告写成“厄尔尼诺导致吉隆泥石流”"
+    },
+    {
+      "id": "C044",
+      "name_zh": "案例用途边界",
+      "key": "case_use_boundary",
+      "value": "历史案例回放与风险识别演示，不用于真实灾害预警决策",
+      "unit": "",
+      "phase": "safety_boundary",
+      "confidence": "高",
+      "source_ids": [
+        "项目定义"
+      ],
+      "agent_use": [
+        "Safety",
+        "Warning"
+      ],
+      "use_in_demo_risk_score": false,
+      "notes": "所有页面和报告应显示"
+    }
+  ],
+  "demo_risk_model": {
+    "name": "Baseline Susceptibility Index v0.1",
+    "type": "demo_only_not_probability",
+    "factors": [
+      {
+        "id": "R1",
+        "name": "高海拔冰冻圈源区",
+        "key": "glacierized_source_zone",
+        "weight_pct": 20,
+        "score_0_to_5": 4,
+        "evidence": "存在高位冰川/冰岩体及冰冻圈活动；是长期易灾环境，不代表具体时刻即将崩塌",
+        "source_ids": [
+          "S03",
+          "S04"
+        ]
+      },
+      {
+        "id": "R2",
+        "name": "巨大高差与狭窄沟谷",
+        "key": "terrain_relief_channel",
+        "weight_pct": 25,
+        "score_0_to_5": 5,
+        "evidence": "源区约5200m、口岸约1800m，极高山-深切峡谷、坡陡沟窄",
+        "source_ids": [
+          "S03",
+          "S04",
+          "S05"
+        ]
+      },
+      {
+        "id": "R3",
+        "name": "沟道松散物源",
+        "key": "loose_material_supply",
+        "weight_pct": 20,
+        "score_0_to_5": 5,
+        "evidence": "冰碛物、岩土碎屑等可被高速流体铲刮裹挟，放大灾害规模",
+        "source_ids": [
+          "S03",
+          "S04"
+        ]
+      },
+      {
+        "id": "R4",
+        "name": "历史链式灾害复发性",
+        "key": "historical_recurrence",
+        "weight_pct": 15,
+        "score_0_to_5": 4,
+        "evidence": "2025-07-08同一区域已发生冰湖溃决→山洪泥石流",
+        "source_ids": [
+          "S04"
+        ]
+      },
+      {
+        "id": "R5",
+        "name": "季风与高降水背景",
+        "key": "seasonal_hydroclimate",
+        "weight_pct": 10,
+        "score_0_to_5": 4,
+        "evidence": "年均降水约1000mm，雨季6-9月；只作季节背景，不代表事发时段实测触发",
+        "source_ids": [
+          "S04"
+        ]
+      },
+      {
+        "id": "R6",
+        "name": "下游暴露与口岸设施",
+        "key": "downstream_exposure",
+        "weight_pct": 10,
+        "score_0_to_5": 5,
+        "evidence": "口岸设施位于狭窄河谷下游，存在人员与基础设施暴露",
+        "source_ids": [
+          "S01",
+          "S05"
+        ]
+      }
+    ],
+    "calculated_index_0_to_100": 91.0,
+    "interpretation": "高基础易灾风险；但缺少灾前实时源区动态传感数据，因此不支持对8·26事件发生时刻进行可靠提前量预测。"
+  },
+  "satellite": {
+    "public_sentinel2": {
+      "center": [
+        28.279,
+        85.379
+      ],
+      "pre": {
+        "datetime_utc": "2026-08-24 05:11",
+        "item_id": "S2A_45RUM_20260824_1_L2A",
+        "resolution_m": 10,
+        "image_url": "https://live.spacedaily.com.cn/gyirong/satellite/sentinel2-pre.jpg"
+      },
+      "post": {
+        "datetime_utc": "2026-08-27 05:10",
+        "item_id": "S2B_45RUM_20260827_0_L2A",
+        "resolution_m": 10,
+        "cloud_pct_approx": 78,
+        "image_url": "https://live.spacedaily.com.cn/gyirong/satellite/sentinel2-post.jpg"
+      },
+      "limitations": "公开专题进行真彩色目视对照；灾后云量较高。只把灾前影像当基线，把灾后变化当验证证据。"
+    },
+    "official_reference_images": [
+      {
+        "filename": "03_glacier_distribution_official.jpg",
+        "url": "https://www.igm.cgs.gov.cn/mobile/kjdt/202609/W020260903364698961335.jpg",
+        "description": "上游冰川分布/高位悬冰川示意（官方科研机构页面）"
+      },
+      {
+        "filename": "04_disaster_path_official.jpg",
+        "url": "https://www.igm.cgs.gov.cn/mobile/kjdt/202609/W020260903364698987537.jpg",
+        "description": "吉隆口岸与高位悬冰川、泥石流方向示意（Google Earth底图，官方科研机构页面）"
+      },
+      {
+        "filename": "05_pre_post_ground_photo_official.jpg",
+        "url": "https://www.igm.cgs.gov.cn/mobile/kjdt/202609/W020260903364698946137.jpg",
+        "description": "吉隆口岸灾前/灾后现场照片对照（官方科研机构页面）"
+      }
+    ]
+  },
+  "agent_mapping": [
+    {
+      "name_zh": "情报员 Agent",
+      "class_suggestion": "IntelligenceAgent",
+      "role": "读取灾前静态/背景数据和遥感元数据；输出“有哪些风险条件”",
+      "inputs": "C003-C027,C035,C037,C040,C041",
+      "guardrail": "禁止把C028-C034灾后结果当作灾前输入"
+    },
+    {
+      "name_zh": "风险分析员 Agent",
+      "class_suggestion": "RiskAnalysisAgent",
+      "role": "基于演示权重计算“基础易灾风险指数”，不输出真实发生概率",
+      "inputs": "R1-R6",
+      "guardrail": "指数不是概率；不得声称预测具体分钟/地点必然发生"
+    },
+    {
+      "name_zh": "检查员 Agent",
+      "class_suggestion": "CheckerAgent",
+      "role": "检查来源、字段缺失、灾前/灾后数据混用、评分一致性、因果表述",
+      "inputs": "C008,C028-C043",
+      "guardrail": "若使用灾后结果作为输入必须REVIEW/FAIL；ENSO因果表述违规则阻止"
+    },
+    {
+      "name_zh": "预警员 Agent",
+      "class_suggestion": "WarningAgent",
+      "role": "将风险结果转成小学生/居民能读懂的风险提示",
+      "inputs": "风险指数+主要因素+C044",
+      "guardrail": "必须显示“历史案例演示/非正式预警”"
+    },
+    {
+      "name_zh": "安全员 Agent",
+      "class_suggestion": "SafetyAgent",
+      "role": "监督权限与真实性：不伪造实时数据、不自动向真实救援机构发送信息",
+      "inputs": "C043,C044",
+      "guardrail": "默认只生成本地演示结果；真实外发禁用"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S01",
+      "name": "西藏自治区人民政府：吉隆县泥石流灾害重要指示",
+      "date": "2026-08-26/27",
+      "authority": "西藏自治区人民政府 / 新华社",
+      "level": "官方",
+      "url": "https://www.xizang.gov.cn/xwzx_406/xwrp/202608/t20260827_555380.html",
+      "use": "确认事件约在8月26日10:30发生、地点为吉隆口岸及重大灾情背景。"
+    },
+    {
+      "id": "S02",
+      "name": "西藏吉隆泥石流由尼泊尔境内高山冰崩引发",
+      "date": "2026-08-28",
+      "authority": "自然资源部 / 中国地质调查局",
+      "level": "官方-核心",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202608/t20260828_867531.html",
+      "use": "确认高位冰川崩塌→高速碎屑流→泥石流链式机制；官方使用灾前灾后高分辨率遥感影像；平均速度超过50m/s。"
+    },
+    {
+      "id": "S03",
+      "name": "西藏吉隆泥石流究竟如何发生？为何来势如此迅猛？",
+      "date": "2026-08-28",
+      "authority": "人民日报客户端 / 中国地质调查局转载",
+      "level": "权威访谈-核心",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202608/t20260829_867554.html",
+      "use": "确认源区约5200m、周边最高峰>7000m、约7分钟、陡峭地形、松散冰碛物与沟道物源等。"
+    },
+    {
+      "id": "S04",
+      "name": "吉隆口岸泥石流地质灾害为何一发再发？",
+      "date": "2026-09-03",
+      "authority": "中国地质科学院地质力学研究所",
+      "level": "科研机构-核心",
+      "url": "https://www.igm.cgs.gov.cn/mobile/kjdt/202609/t20260903_867839.htm",
+      "use": "区域地质/气候背景、年均降水约1000mm、6-9月雨季、上游55个冰湖/3.39km²、2025年历史灾害、约3000m以上高差等。"
+    },
+    {
+      "id": "S05",
+      "name": "吉隆县泥石流灾害抢险救援：499名群众已全部安全撤离并安置",
+      "date": "2026-08-31",
+      "authority": "西藏自治区人民政府 / 西藏日报",
+      "level": "官方-核心",
+      "url": "https://www.xizang.gov.cn/xwzx_406/xwrp/202608/t20260831_555773.html",
+      "use": "较详细事件参数：约5200m源区、约4000m坠落阶段、约22km路径、口岸约1800m、约0.7km²影响、27处建筑；同时存在与早期10:30口径不一致的10:52源区时间，需注明。"
+    },
+    {
+      "id": "S06",
+      "name": "中国地质调查局实施吉隆泥石流次生地质灾害监测",
+      "date": "2026-09-04",
+      "authority": "中国地质调查局",
+      "level": "官方-核心",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202609/t20260904_867978.html",
+      "use": "提供真实监测指标：冰岩位移、岩土松动、地表震动、河道水位、断面宽度、天气、冰川消融、沟道堆积物。"
+    },
+    {
+      "id": "S07",
+      "name": "闻令而动 向险而行！吉隆灾区工作纪实",
+      "date": "2026-09-08",
+      "authority": "中国地质调查局",
+      "level": "官方",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202609/t20260908_868093.html",
+      "use": "说明灾后遥感解译、风险点排查和全天候监测；确认预警窗口极短、源区远、链式灾害特点。"
+    },
+    {
+      "id": "S08",
+      "name": "国家航天局紧急调度卫星资源保障吉隆抢险救灾",
+      "date": "2026-08-27",
+      "authority": "国家航天局",
+      "level": "官方-核心",
+      "url": "https://www.cnsa.gov.cn/n6758823/n6758838/c10771422/content.html",
+      "use": "确认已推送5景灾前+10景灾后卫星影像，卫星数据确为官方灾情研判的重要依据。"
+    },
+    {
+      "id": "S09",
+      "name": "吉隆口岸泥石流灾害｜航天应急遥感专题",
+      "date": "2026-08",
+      "authority": "太空日报（基于公开Sentinel-2数据）",
+      "level": "公开遥感辅助",
+      "url": "https://live.spacedaily.com.cn/gyirong/",
+      "use": "提供公开Sentinel-2灾前/灾后影像元数据：08-24与08-27、10m、L2A、中心坐标、云量和公开场景ID。只作公开遥感辅助，不替代官方判读。"
+    },
+    {
+      "id": "S10",
+      "name": "WMO El Niño/La Niña Update (August 2026)",
+      "date": "2026-09-03",
+      "authority": "World Meteorological Organization",
+      "level": "国际权威-背景",
+      "url": "https://public.wmo.int/resources/publication-series/el-ninola-nina-updates/august-2026",
+      "use": "确认2026年8月厄尔尼诺已确立并预计继续增强。仅作为宏观气候背景，不作为吉隆灾害直接因果证据。"
+    },
+    {
+      "id": "S11",
+      "name": "NOAA El Niño Index Dashboard",
+      "date": "2026-08 data",
+      "authority": "NOAA Physical Sciences Laboratory",
+      "level": "国际权威-背景",
+      "url": "https://www.psl.noaa.gov/enso/dashboard.html",
+      "use": "2026年8月Niño 3.4约+1.89°C、MEI v2约2.54。仅作ENSO背景，不进入吉隆案例风险评分。"
+    },
+    {
+      "id": "S12",
+      "name": "吉隆县未来4天有持续性降水天气",
+      "date": "2026-08-26",
+      "authority": "新华社 / 吉隆县气象局",
+      "level": "官方气象-灾后/同期",
+      "url": "https://www.xinhuanet.com/20260826/58c7863cdf1145a49ca9f46d90225bb9/c.html",
+      "use": "8月26日晚至30日持续性降水预报及山洪/泥石流/滑坡次生风险提示。发布时间在灾害发生后，不可用于证明灾前已完成预警。"
+    },
+    {
+      "id": "S13",
+      "name": "自然资源部工作组持续开展遥感影像解译工作",
+      "date": "2026-09-01",
+      "authority": "中国地质调查局",
+      "level": "官方-遥感",
+      "url": "https://m.cgs.gov.cn/ddyw/202609/t20260901_867680.html",
+      "use": "确认8月27-28日遥感数据用于灾后全域解译，圈定滑坡/泥石流隐患并通过灾前灾后影像核验破坏形态。"
+    }
+  ],
+  "optional_synthetic_demo_precursors": {
+    "enabled_by_default": false,
+    "warning": "以下仅用于测试预警升级逻辑，绝非2026年灾前真实观测。界面若启用必须标注“模拟传感器信号”。",
+    "fields": {
+      "ice_rock_displacement_anomaly": true,
+      "microseismic_vibration_anomaly": true,
+      "rapid_river_level_change": true
+    }
+  }
+}

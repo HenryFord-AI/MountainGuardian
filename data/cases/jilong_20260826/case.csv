@@ -1,0 +1,45 @@
+﻿ID,中文字段,Key,Value,Unit,Phase,Confidence,Source IDs,Agent Use,Use in Risk Score,Notes
+C001,案例ID,case_id,JILONG_20260826,,metadata,高,S01,"Intelligence,Checker",否,唯一标识
+C002,案例名称,case_name,2026年西藏吉隆口岸“8·26”冰岩崩-碎屑流-泥石流灾害,,metadata,高,S02,"Intelligence,Warning",否,使用官方灾害链表述
+C003,展示中心位置,location,西藏日喀则市吉隆县吉隆口岸（中尼边境）,,pre_event_static,高,S01,"Intelligence,Warning",否,案例展示位置
+C004,遥感页面中心纬度,port_lat,28.279,degN,pre_event_static,中,S09,Intelligence,否,公开遥感专题中心点，不作为官方测绘坐标
+C005,遥感页面中心经度,port_lon,85.379,degE,pre_event_static,中,S09,Intelligence,否,公开遥感专题中心点，不作为官方测绘坐标
+C006,事件日期,event_date,2026-08-26,,metadata,高,S01,"Intelligence,Warning",否,
+C007,公开通报事件时间,event_time_public,约10:30,北京时间,metadata,高,S01,"Intelligence,Checker",否,早期和多数通报口径
+C008,后续发布的源区断裂时间,source_fracture_time_later_report,约10:52,北京时间,post_event_validation,中,S05,Checker,否,与早期10:30通报存在时间口径差异；Demo不依赖分钟级时间
+C009,源区位置描述,source_area,尼泊尔境内，东林藏布河支流郭巴峡曲支沟错坚河上游,,post_event_validation,高,S02,"Intelligence,Checker",否,灾后遥感与调查确认
+C010,高海拔冰川源区,glacierized_source_zone,是,bool,pre_event_static,高,S03;S04,"Intelligence,Risk",是,静态易灾背景，不等于临灾前兆
+C011,源区海拔,source_elevation_m,5200,m,pre_event_static,高,S03;S04;S05,"Intelligence,Risk",是,约值
+C012,口岸海拔,port_elevation_m,1800,m,pre_event_static,高,S04;S05,"Intelligence,Risk",是,约值
+C013,源区至口岸垂直高差,vertical_drop_m,3400,m,derived_pre_event_static,高,S03;S04;S05,"Risk,Checker",是,由5200-1800计算；报告可写“超过3000米”
+C014,地形类型,terrain_class,极高山-深切峡谷，坡陡沟窄,,pre_event_static,高,S04,"Intelligence,Risk",是,强势能和通道约束的重要因素
+C015,沟道松散物源,loose_material_supply,冰碛物、岩土碎屑等松散堆积物丰富,,pre_event_static,高,S03;S04,"Intelligence,Risk",是,可被高速冰崩体铲刮裹挟
+C016,区域构造背景,tectonic_context,印度板块与欧亚板块碰撞边界附近，断裂/节理发育,,pre_event_static,高,S04,"Intelligence,Risk",是,作为长期稳定性背景，不用于临灾时间预测
+C017,上游冰湖数量,upstream_glacial_lake_count,55,count,pre_event_static,高,S04,"Intelligence,Risk",是,东林藏布河上游流域统计
+C018,上游冰湖总面积,upstream_glacial_lake_area_km2,3.39,km2,pre_event_static,高,S04,"Intelligence,Risk",否,背景指标；本次事件不是冰湖溃决
+C019,区域年平均降水,annual_precip_mm,1000,mm/year,pre_event_context,中-高,S04,"Intelligence,Risk",是,区域气候背景约值
+C020,主要雨季,rainy_season,6-9月,months,pre_event_context,高,S04,"Intelligence,Risk",是,季风雨季背景
+C021,夏季降水占比,summer_precip_share_pct,80,%,pre_event_context,中-高,S04,"Intelligence,Risk",是,区域气候背景；不等于事发当日实测降水
+C022,历史相邻灾害日期,prior_event_date,2025-07-08,,pre_event_static,高,S04,"Intelligence,Risk",是,同一区域冰湖溃决引发山洪泥石流
+C023,历史相邻灾害类型,prior_event_type,冰湖溃决→山洪泥石流,,pre_event_static,高,S04,"Intelligence,Risk",是,说明区域具有冰冻圈链式灾害历史
+C024,历史相邻灾害影响,prior_event_impact,17人失联，中尼友谊桥被冲毁,,pre_event_static,高,S04,"Intelligence,Warning",否,仅用于历史背景
+C025,2026年8月ENSO状态,enso_status_aug2026,El Niño firmly established / 厄尔尼诺已确立并增强,,context_only,高,S10,"Intelligence,Checker",否,只作宏观背景，不作为本次灾害直接原因
+C026,Niño 3.4指数,nino34_aug2026,1.89,degC anomaly,context_only,高,S11,"Intelligence,Checker",否,NOAA 2026年8月值；不进入吉隆评分
+C027,MEI v2指数,mei_v2_aug2026,2.54,index,context_only,高,S11,"Intelligence,Checker",否,NOAA 2026年8月值；不进入吉隆评分
+C028,灾害直接触发,actual_trigger,高位冰川/冰岩体失稳崩塌,,post_event_validation,高,S02;S04;S05,"Checker,Warning",否,灾后确认，绝不能作为灾前预测输入
+C029,实际灾害链,actual_disaster_chain,高位冰崩→高速碎屑流→泥石流,,post_event_validation,高,S02;S03;S04,"Checker,Warning",否,用于事后验证
+C030,灾害运动距离,actual_runout_km,22,km,post_event_validation,高,S05,Checker,否,后续官方发布约值
+C031,灾害传播时间,actual_travel_time_min,6-7,min,post_event_validation,高,S03;S04;S05,Checker,否,事后验证
+C032,平均运动速度,actual_avg_speed_mps,>50,m/s,post_event_validation,高,S02;S04,Checker,否,约180km/h量级
+C033,灾害影响面积,actual_affected_area_km2,0.7,km2,post_event_validation,高,S05,Checker,否,灾后影响结果
+C034,受损建筑数量,actual_structures_destroyed,27,count,post_event_validation,高,S05,Checker,否,灾后影响结果
+C035,卫星灾前成像时间,satellite_pre_datetime,2026-08-24 05:11,UTC,pre_event_evidence,中-高,S09,"Intelligence,Checker",否,Sentinel-2 L2A公开场景
+C036,卫星灾后成像时间,satellite_post_datetime,2026-08-27 05:10,UTC,post_event_validation,中-高,S09,Checker,否,Sentinel-2 L2A公开场景
+C037,卫星分辨率,satellite_resolution_m,10,m/pixel,pre_event_evidence,高,S09,"Intelligence,Checker",否,真彩色关键波段10m
+C038,灾后影像整景云量,satellite_post_cloud_pct,78,%,post_event_validation,中-高,S09,Checker,否,云下区域不可判读
+C039,灾后可见遥感变化,satellite_visible_change,河槽明显展宽、泥沙覆盖范围扩大、物质沿狭窄河谷输移,,post_event_validation,中,S09;S13,Checker,否,公开光学影像目视变化；受云影响
+C040,官方卫星应急数据量,official_satellite_scene_count,5景灾前 + 10景灾后,scene,post_event_validation,高,S08,"Intelligence,Checker",否,说明遥感是官方应急研判的重要数据层
+C041,推荐实时监测信号,monitoring_signals,冰岩位移；岩土松动；地表震动；河道水位；断面宽度；天气；冰川消融；沟道堆积物变化,,design_input,高,S06;S07,"Intelligence,Risk,Checker",否,用于未来系统设计；不是2026灾前已公开取得的数据
+C042,灾前动态源区传感数据,pre_event_dynamic_sensor_data,公开资料中未找到,,missing_input,高,S06;S07,Checker,否,这是无法做分钟级真实预警的关键缺口
+C043,厄尔尼诺与本次灾害直接因果,enso_direct_causality,未证实,,scientific_boundary,高,S02;S10,"Checker,Safety",否,禁止Demo或报告写成“厄尔尼诺导致吉隆泥石流”
+C044,案例用途边界,case_use_boundary,历史案例回放与风险识别演示，不用于真实灾害预警决策,,safety_boundary,高,项目定义,"Safety,Warning",否,所有页面和报告应显示
