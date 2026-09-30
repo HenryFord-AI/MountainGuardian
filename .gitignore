@@ -13,6 +13,7 @@ __pycache__/
 *.pyd
 .Python
 venv/
+.venv/
 env/
 ENV/
 *.egg-info/
@@ -27,6 +28,9 @@ database/*.db-wal
 
 # Case pack human-reference office docs (binary, not runtime inputs)
 data/cases/*/reference/
+
+# Runtime artifacts (never commit generated runtime state)
+data/runtime/
 
 # Logs
 logs/
@@ -49,3 +53,6 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Gate worktrees (local engineering worktrees, never tracked)
+.worktrees/
