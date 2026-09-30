@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.0",
+  "config_version": "g03a-2026-10-01.1",
+  "region_id": "jilong_port",
+  "region_name": "Jilong Port and upstream high-mountain valley (Kyirong, Tibet / Nepal border)",
+  "region_name_zh": "西藏吉隆口岸及相关上游高山峡谷区域",
+  "description": "Fixed v1.0 Risk Watch monitoring region: Jilong Port (downstream exposure zone) and the upstream high-altitude cryosphere source-zone environment of the Donglin Zangbo / Gyirong valley system. v1.0 monitors this single region only; no nationwide region selection.",
+  "monitoring_scope": {
+    "mode": "single_fixed_region_v1",
+    "covers": [
+      "Jilong Port and downstream exposure zone",
+      "Upstream high-mountain valley and high-altitude cryosphere source-zone environment"
+    ],
+    "not_covered": [
+      "Arbitrary user-selected regions",
+      "Multi-region national coverage"
+    ]
+  },
+  "monitoring_points": [
+    {
+      "point_id": "source_zone",
+      "name": "Source Zone (high-altitude cryosphere / source-zone environment)",
+      "role": "Represents the high-altitude glacierized source-zone environment upstream of Jilong Port (Nepal side, upstream of the Cuojianhe tributary of the Gobaxiaqu / Donglin Zangbo system).",
+      "latitude": 28.28,
+      "longitude": 85.481,
+      "coordinate_provenance": {
+        "type": "representative_derived",
+        "exact": false,
+        "anchor": {
+          "reference": "MountainGuardian Jilong Case Pack v0.1 fields C004/C005 (port_lat/port_lon)",
+          "value": [28.279, 85.379],
+          "anchor_source": "S09 public Sentinel-2 thematic center (live.spacedaily.com.cn/gyirong/); representative, not an official survey coordinate"
+        },
+        "method": "Scale-bar measurement on the official disaster-path reference figure 04_disaster_path_official.jpg (Institute of Geomechanics, CAGS / China Geological Survey; mirrored in-project at data/cases/jilong_20260826/satellite/04_disaster_path_official.jpg, original URL https://www.igm.cgs.gov.cn/mobile/kjdt/202609/W020260903364698987537.jpg). The figure places the high hanging-glacier source area approximately 10 km east of the Jilong Port marker along the documented ice-avalanche/debris-flow path; offset converted to degrees at latitude 28.28 (1 deg lon ~ 98.0 km) and added to the anchor coordinate.",
+        "uncertainty_km": 2.0,
+        "meaning": "Representative grid point for the high-altitude cryosphere source-zone environment used for gridded weather retrieval; NOT a surveyed sensor location.",
+        "source_ids": ["S02", "S03", "S04", "S05"]
+      },
+      "elevation_m": 5200,
+      "elevation_provenance": {
+        "reference": "Case Pack field C011 (source_elevation_m, approximate)",
+        "source_ids": ["S03", "S04", "S05"],
+        "note": "Official reports give ~5200 m for the source zone; surrounding peaks exceed 6900-7000 m."
+      }
+    },
+    {
+      "point_id": "port_zone",
+      "name": "Port Zone (Jilong Port / downstream exposure zone)",
+      "role": "Represents Jilong Port and the downstream exposure zone in the narrow valley.",
+      "latitude": 28.279,
+      "longitude": 85.379,
+      "coordinate_provenance": {
+        "type": "representative",
+        "exact": false,
+        "reference": "MountainGuardian Jilong Case Pack v0.1 fields C004/C005 (port_lat/port_lon), phase pre_event_static",
+        "source_ids": ["S09"],
+        "meaning": "Public Sentinel-2 thematic page center point; representative monitoring coordinate, explicitly not an official survey coordinate.",
+        "uncertainty_km": 1.0
+      },
+      "elevation_m": 1800,
+      "elevation_provenance": {
+        "reference": "Case Pack field C012 (port_elevation_m, approximate)",
+        "source_ids": ["S04", "S05"],
+        "note": "Official reports give ~1800 m (figure label 1830 m) for Jilong Port."
+      }
+    }
+  ],
+  "static_terrain_baseline": {
+    "terrain_class": "Extremely high mountain - deeply incised gorge; steep slopes, narrow channel",
+    "terrain_class_zh": "极高山-深切峡谷，坡陡沟窄",
+    "vertical_drop_m": 3400,
+    "vertical_drop_note": "5200 m source zone minus 1800 m port; official reports phrase it as 'more than 3000 m'.",
+    "loose_material_supply": "Abundant loose moraine and rock debris in the channel, entrainable by high-speed ice avalanches",
+    "tectonic_context": "Near the India-Eurasia plate collision boundary; faults and joints developed (long-term stability background only, not used for imminent-failure timing)",
+    "provenance": {
+      "reference": "Case Pack fields C013 (derived_pre_event_static), C014, C015, C016 (pre_event_static)",
+      "source_ids": ["S03", "S04", "S05"]
+    }
+  },
+  "cryosphere_baseline": {
+    "glacierized_source_zone": true,
+    "upstream_glacial_lake_count": 55,
+    "upstream_glacial_lake_area_km2": 3.39,
+    "basin_note": "Lake statistics refer to the upstream Donglin Zangbo basin; the 2026 event was not a lake outburst.",
+    "provenance": {
+      "reference": "Case Pack fields C010, C017, C018 (pre_event_static)",
+      "source_ids": ["S03", "S04"]
+    }
+  },
+  "historical_hazard_baseline": {
+    "prior_event_date": "2025-07-08",
+    "prior_event_type": "Glacial lake outburst -> flash flood / debris flow in the same region",
+    "recurrence_note": "Documents cryosphere-driven chained-hazard recurrence in this region; used only as static susceptibility background.",
+    "provenance": {
+      "reference": "Case Pack fields C022, C023 (pre_event_static)",
+      "source_ids": ["S04"]
+    }
+  },
+  "downstream_exposure": {
+    "description": "Port facilities, staff and infrastructure sit in a narrow valley downstream of the source zone; exposure is persistent and static.",
+    "provenance": {
+      "reference": "Case Pack static susceptibility factor R6 evidence (downstream_exposure), phase-consistent static background",
+      "source_ids": ["S01", "S05"]
+    }
+  },
+  "static_susceptibility_inputs": {
+    "description": "Authorized static factor inputs inherited from the frozen Historical Replay six-factor model, EXCLUDING factor R5 (monsoon / high-precipitation background) to prevent double counting with dynamic weather. G03A stores inputs and weights only; the deterministic Regional Static Susceptibility Baseline B is computed by G03B, never here.",
+    "derived_from": "MountainGuardian Jilong Case Pack v0.1 demo_risk_model.factors (frozen), minus R5",
+    "excluded_factors": [
+      {
+        "factor_id": "R5",
+        "name": "Monsoon and high-precipitation background",
+        "reason": "Excluded from the Risk Watch static baseline to avoid double counting with the dynamic precipitation trigger."
+      }
+    ],
+    "original_weight_ratio": "20 : 25 : 20 : 15 : 10",
+    "normalization": "Retained original relative weights renormalized to 100% (divide by 90, multiply by 100).",
+    "factors": [
+      {
+        "factor_id": "R1",
+        "key": "glacierized_source_zone",
+        "name": "High-altitude cryosphere source zone",
+        "score_0_to_5": 4,
+        "original_weight_pct": 20,
+        "normalized_weight_pct": 22.22,
+        "source_ids": ["S03", "S04"]
+      },
+      {
+        "factor_id": "R2",
+        "key": "terrain_relief_channel",
+        "name": "Huge vertical drop and narrow gorge",
+        "score_0_to_5": 5,
+        "original_weight_pct": 25,
+        "normalized_weight_pct": 27.78,
+        "source_ids": ["S03", "S04", "S05"]
+      },
+      {
+        "factor_id": "R3",
+        "key": "loose_material_supply",
+        "name": "Loose channel material supply",
+        "score_0_to_5": 5,
+        "original_weight_pct": 20,
+        "normalized_weight_pct": 22.22,
+        "source_ids": ["S03", "S04"]
+      },
+      {
+        "factor_id": "R4",
+        "key": "historical_recurrence",
+        "name": "Historical chained-hazard recurrence",
+        "score_0_to_5": 4,
+        "original_weight_pct": 15,
+        "normalized_weight_pct": 16.67,
+        "source_ids": ["S04"]
+      },
+      {
+        "factor_id": "R6",
+        "key": "downstream_exposure",
+        "name": "Downstream exposure and port facilities",
+        "score_0_to_5": 5,
+        "original_weight_pct": 10,
+        "normalized_weight_pct": 11.11,
+        "source_ids": ["S01", "S05"]
+      }
+    ],
+    "scoring_config_version": "risk-watch-static-v1.0-5factors",
+    "derivation_boundary": "No B / R / F / D / C / O7 value is stored or computed in G03A. G03B recomputes B deterministically from these inputs."
+  },
+  "weather_data_policy": {
+    "operational_source": "Open-Meteo Forecast API, model ecmwf_ifs (ECMWF IFS), https://api.open-meteo.com/v1/forecast",
+    "historical_source": "Open-Meteo Historical Weather (Archive) API, https://archive-api.open-meteo.com/v1/archive. Frozen preference: era5_land. Verified 2026-10-01 against current official docs and live API: ERA5-Land exposes no precipitation variable (nulls), so precipitation climatology uses the consistent single-model era5 reanalysis on the same endpoint/period when the preferred model returns no precipitation; the fallback is validated at retrieval time and recorded in each climatology reference provenance. Mixed 'best match' series are prohibited.",
+    "climatology_baseline": {
+      "start": "1991-01-01",
+      "end": "2020-12-31"
+    },
+    "raw_response_cache_minutes": 30,
+    "quality_states": ["FRESH", "STALE", "MISSING"]
+  },
+  "source_references": [
+    {
+      "id": "S01",
+      "name": "Tibet Autonomous Region People's Government: instructions on the Jilong County debris flow disaster",
+      "authority": "Tibet Autonomous Region People's Government / Xinhua",
+      "url": "https://www.xizang.gov.cn/xwzx_406/xwrp/202608/t20260827_555380.html",
+      "use": "Region identity and downstream exposure background (static)."
+    },
+    {
+      "id": "S02",
+      "name": "Jilong debris flow triggered by high-mountain ice avalanche on the Nepal side",
+      "authority": "Ministry of Natural Resources / China Geological Survey",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202608/t20260828_867531.html",
+      "use": "Source-zone geographic description (upstream valley system, Nepal side) used to scope the source-zone monitoring point."
+    },
+    {
+      "id": "S03",
+      "name": "How did the Jilong debris flow happen? (expert interview)",
+      "authority": "People's Daily client / China Geological Survey reprint",
+      "url": "https://www.cgs.gov.cn/ywdt/ddyw/202608/t20260829_867554.html",
+      "use": "Source-zone elevation ~5200 m, steep terrain, loose moraine (static baseline)."
+    },
+    {
+      "id": "S04",
+      "name": "Why do debris flows recur at Jilong Port?",
+      "authority": "Institute of Geomechanics, Chinese Academy of Geological Sciences",
+      "url": "https://www.igm.cgs.gov.cn/mobile/kjdt/202609/t20260903_867839.htm",
+      "use": "Terrain class, relief, cryosphere and lake statistics, 2025 prior event, port elevation (static baseline); publisher of the official disaster-path reference figure used for source-zone coordinate derivation."
+    },
+    {
+      "id": "S05",
+      "name": "Jilong County debris flow rescue: 499 residents evacuated",
+      "authority": "Tibet Autonomous Region People's Government / Tibet Daily",
+      "url": "https://www.xizang.gov.cn/xwzx_406/xwrp/202608/t20260831_555773.html",
+      "use": "Elevations (source ~5200 m, port ~1800 m) and relief magnitude (static baseline)."
+    },
+    {
+      "id": "S09",
+      "name": "Jilong Port debris flow | aerospace emergency remote-sensing feature",
+      "authority": "Space Daily (public Sentinel-2 metadata)",
+      "url": "https://live.spacedaily.com.cn/gyirong/",
+      "use": "Port-zone representative coordinate (page center); public remote-sensing aid only."
+    }
+  ],
+  "provenance": {
+    "prepared_by": "MountainGuardian G03A (Risk Watch Data Foundation)",
+    "prepared_at": "2026-10-01",
+    "separation_statement": "This file is the independent Risk Watch Source of Truth. It contains only information legitimately usable for continuing monitoring. It intentionally excludes all Historical Replay post-event validation content (trigger confirmation, disaster chain, runout, travel time, speed, affected area, destroyed structures, post-event satellite validation, later-report fracture time).",
+    "coordinate_policy": "No monitoring-point coordinate is invented. Every coordinate record carries its source reference, meaning and exact/representative classification."
+  },
+  "scientific_limitations": [
+    "Open-Meteo ECMWF / ERA5-Land values are gridded model and reanalysis products, not local automatic stations or source-zone sensors; complex terrain and microclimate are only partly represented.",
+    "No public real-time source-zone displacement, crack, microseismic or ice-avalanche precursor monitoring exists; this configuration must not be read as supporting exact collapse-time prediction.",
+    "Monitoring-point coordinates are representative grid anchors (derived/representative, with stated uncertainty), not surveyed instrument locations.",
+    "Percentile positions describe meteorological anomaly relative to the 1991-2020 local climatology; they are not disaster probabilities."
+  ]
+}
