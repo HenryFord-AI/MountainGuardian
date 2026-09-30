@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "config_version": "g03a-2026-10-01.1",
+  "config_version": "g03b-2026-10-01.1",
   "region_id": "jilong_port",
   "region_name": "Jilong Port and upstream high-mountain valley (Kyirong, Tibet / Nepal border)",
   "region_name_zh": "西藏吉隆口岸及相关上游高山峡谷区域",
@@ -165,6 +165,104 @@
     "scoring_config_version": "risk-watch-static-v1.0-5factors",
     "derivation_boundary": "No B / R / F / D / C / O7 value is stored or computed in G03A. G03B recomputes B deterministically from these inputs."
   },
+  "derived_static_baseline": {
+    "status": "DERIVED",
+    "notice": "DERIVED section — deterministically computed from static_susceptibility_inputs by the G03B Risk Watch engine. Not a source fact and not an engine input: the engine always recomputes B and verifies it against this record within explicit numerical tolerance.",
+    "regional_static_susceptibility_baseline": 92.22,
+    "value_full_precision": 92.22200000000001,
+    "rounding_policy": "All internal calculations use full IEEE-754 double precision; no intermediate value is rounded before subsequent calculations. Serialized/display values are rounded consistently to 2 decimal places; the raw unrounded values are preserved alongside them. Risk-band classification and all comparisons always use the unrounded values.",
+    "derivation": "B = sum over the five retained static factors of (score_0_to_5 / 5.0) * normalized_weight_pct; R5 excluded to prevent double counting with the dynamic precipitation trigger",
+    "derivation_algorithm": "static-baseline-derivation-v1.0",
+    "risk_engine_algorithm_version": "risk-watch-engine-v1.0",
+    "scoring_config_version": "risk-watch-static-v1.0-5factors",
+    "generated_from": [
+      "static_susceptibility_inputs"
+    ],
+    "source_factor_ids": [
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R6"
+    ],
+    "factor_contributions": [
+      {
+        "factor_id": "R1",
+        "key": "glacierized_source_zone",
+        "name": "High-altitude cryosphere source zone",
+        "score_0_to_5": 4.0,
+        "normalized_weight_pct": 22.22,
+        "contribution": 17.776,
+        "contribution_rounded": 17.78,
+        "source_ids": [
+          "S03",
+          "S04"
+        ]
+      },
+      {
+        "factor_id": "R2",
+        "key": "terrain_relief_channel",
+        "name": "Huge vertical drop and narrow gorge",
+        "score_0_to_5": 5.0,
+        "normalized_weight_pct": 27.78,
+        "contribution": 27.78,
+        "contribution_rounded": 27.78,
+        "source_ids": [
+          "S03",
+          "S04",
+          "S05"
+        ]
+      },
+      {
+        "factor_id": "R3",
+        "key": "loose_material_supply",
+        "name": "Loose channel material supply",
+        "score_0_to_5": 5.0,
+        "normalized_weight_pct": 22.22,
+        "contribution": 22.22,
+        "contribution_rounded": 22.22,
+        "source_ids": [
+          "S03",
+          "S04"
+        ]
+      },
+      {
+        "factor_id": "R4",
+        "key": "historical_recurrence",
+        "name": "Historical chained-hazard recurrence",
+        "score_0_to_5": 4.0,
+        "normalized_weight_pct": 16.67,
+        "contribution": 13.336000000000002,
+        "contribution_rounded": 13.34,
+        "source_ids": [
+          "S04"
+        ]
+      },
+      {
+        "factor_id": "R6",
+        "key": "downstream_exposure",
+        "name": "Downstream exposure and port facilities",
+        "score_0_to_5": 5.0,
+        "normalized_weight_pct": 11.11,
+        "contribution": 11.11,
+        "contribution_rounded": 11.11,
+        "source_ids": [
+          "S01",
+          "S05"
+        ]
+      }
+    ],
+    "contribution_sum_check": "sum(factor_contributions[].contribution) == value_full_precision within 1e-06",
+    "excluded_factors": [
+      {
+        "factor_id": "R5",
+        "reason": "Excluded from the static baseline to avoid double counting with the dynamic precipitation trigger (doc 04 §13)."
+      }
+    ],
+    "semantics": "B is the Regional Static Susceptibility Baseline (0-100): the static long-term hazard background of the region derived from the five authorized static factors. It is NOT the Current Risk Index, NOT a disaster probability and NOT the Historical Replay Baseline Susceptibility Index (91).",
+    "generated_at": "2026-10-01",
+    "generated_by": "MountainGuardian G03B deterministic engine (risk-watch-engine-v1.0)"
+  },
   "weather_data_policy": {
     "operational_source": "Open-Meteo Forecast API, model ecmwf_ifs (ECMWF IFS), https://api.open-meteo.com/v1/forecast",
     "historical_source": "Open-Meteo Historical Weather (Archive) API, https://archive-api.open-meteo.com/v1/archive. Frozen preference: era5_land. Verified 2026-10-01 against current official docs and live API: ERA5-Land exposes no precipitation variable (nulls), so precipitation climatology uses the consistent single-model era5 reanalysis on the same endpoint/period when the preferred model returns no precipitation; the fallback is validated at retrieval time and recorded in each climatology reference provenance. Mixed 'best match' series are prohibited.",
@@ -226,7 +324,7 @@
     "coordinate_policy": "No monitoring-point coordinate is invented. Every coordinate record carries its source reference, meaning and exact/representative classification."
   },
   "scientific_limitations": [
-    "Open-Meteo ECMWF / ERA5-Land values are gridded model and reanalysis products, not local automatic stations or source-zone sensors; complex terrain and microclimate are only partly represented.",
+    "Open-Meteo ECMWF forecast and ERA5 / ERA5-Land reanalysis values are gridded model and reanalysis products, not local automatic stations or source-zone sensors; complex terrain and microclimate are only partly represented.",
     "No public real-time source-zone displacement, crack, microseismic or ice-avalanche precursor monitoring exists; this configuration must not be read as supporting exact collapse-time prediction.",
     "Monitoring-point coordinates are representative grid anchors (derived/representative, with stated uncertainty), not surveyed instrument locations.",
     "Percentile positions describe meteorological anomaly relative to the 1991-2020 local climatology; they are not disaster probabilities."
