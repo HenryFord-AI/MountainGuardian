@@ -6,6 +6,8 @@ Frozen data contracts for evidence and agent outputs:
   - schemas/agent_outputs.py   – AgentStatus / RiskSignal / AgentRunResult
                                  and output JSON schemas (doc 03 §10.3,
                                  §11.3, §12.4, §19, §28, §29)
+  - schemas/synthesis.py       – Synthesizer / Critic contracts (doc 03
+                                 §14–16, §18; G02B)
 """
 
 from schemas.evidence import (
@@ -27,6 +29,16 @@ from schemas.agent_outputs import (
     make_output_validator,
     output_schema_for,
 )
+from schemas.synthesis import (
+    SYNTHESIS_OUTPUT_SCHEMA,
+    AgentAgreement,
+    CriticIssue,
+    CriticReviewResult,
+    CriticVerdictResult,
+    IssueSeverity,
+    SynthesisResult,
+    make_synthesis_validator,
+)
 
 __all__ = [
     "BOUNDARY_PHASES",
@@ -44,4 +56,12 @@ __all__ = [
     "RiskSignal",
     "make_output_validator",
     "output_schema_for",
+    "SYNTHESIS_OUTPUT_SCHEMA",
+    "AgentAgreement",
+    "CriticIssue",
+    "CriticReviewResult",
+    "CriticVerdictResult",
+    "IssueSeverity",
+    "SynthesisResult",
+    "make_synthesis_validator",
 ]
