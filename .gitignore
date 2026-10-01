@@ -56,3 +56,17 @@ htmlcov/
 
 # Gate worktrees (local engineering worktrees, never tracked)
 .worktrees/
+
+# ─── G05A Azure deployment artifacts ─────────────────────────────────────────
+# Publish profiles / Azure CLI scratch (never commit deployment credentials)
+*.publishsettings
+.azure/
+
+# Global runtime DB sidecar files (doc 06 §58)
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Local deployment package output
+dist/
+deploy.zip

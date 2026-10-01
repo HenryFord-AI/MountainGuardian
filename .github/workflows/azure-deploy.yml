@@ -1,0 +1,128 @@
+# MountainGuardian v1.0 — G05A CI/CD (frozen doc 06 §51–§55).
+#
+# Pipeline: checkout → Python 3.12 → install → pip check → pytest → deploy → smoke.
+# Deployment MUST NOT run if tests fail (enforced by `needs: test`).
+#
+# Authentication: Azure Web App Publish Profile stored in the repository
+# secret AZURE_WEBAPP_PUBLISH_PROFILE (doc 06 §54). This workflow NEVER
+# contains or echoes the DeepSeek API key or any secret value (doc 06 §20/§55).
+#
+# Triggers:
+#   - push to main          → production deployment (intended steady state)
+#   - workflow_dispatch     → manual run (used for the initial safe validation
+#                             of the G05A deployment path; documented in
+#                             deployment/RUNBOOK_G05A.md)
+name: MountainGuardian CI/CD
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AZURE_WEBAPP_NAME: mountainguardian-v1
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  test:
+    name: Test (pip check + pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: pip check
+        run: pip check
+
+      - name: pytest (mock/deterministic only — no live provider calls)
+        run: pytest
+
+  deploy:
+    name: Deploy to Azure App Service
+    runs-on: ubuntu-latest
+    needs: test
+    environment:
+      name: production
+      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build deployment package (runtime content only)
+        run: |
+          # Package tracked repository content, excluding development and
+          # runtime artifacts (doc 06 §57). Secrets/.env/runtime DBs are not
+          # tracked by Git and therefore never present in the checkout.
+          mkdir -p dist
+          zip -r dist/deploy.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".claude/*" \
+            -x "dist/*" \
+            -x "tests/*" \
+            -x "docs/*" \
+            -x "logs/*" \
+            -x "venv/*" \
+            -x ".venv/*" \
+            -x "data/runtime/*" \
+            -x ".pytest_cache/*" \
+            -x "__pycache__/*" \
+            -x "*/__pycache__/*" \
+            -x "*.pyc" \
+            -x ".env" \
+            -x ".env.*" \
+            -x "*.db" \
+            -x "*.db-journal" \
+            -x "*.db-shm" \
+            -x "*.db-wal" \
+            -x "*.publishsettings" \
+            -x "Dockerfile" \
+            -x "docker-compose.yml" \
+            -x "cloudrun.yaml" \
+            -x ".coverage" \
+            -x "htmlcov/*"
+          # Sanity: required runtime content is present in the package.
+          unzip -l dist/deploy.zip | grep -q "mountainguardian_app.py"
+          unzip -l dist/deploy.zip | grep -q "startup.sh"
+          unzip -l dist/deploy.zip | grep -q "requirements.txt"
+          unzip -l dist/deploy.zip | grep -q "data/cases/jilong_20260826/case.json"
+          unzip -l dist/deploy.zip | grep -q "data/regions/jilong_port/region.json"
+          # Sanity: forbidden content is absent from the package.
+          ! unzip -l dist/deploy.zip | grep -q "\.env$"
+          ! unzip -l dist/deploy.zip | grep -q "\.db$"
+
+      - name: Deploy to Azure Web App (Publish Profile)
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: dist/deploy.zip
+
+      - name: Smoke check (root + Streamlit health)
+        run: |
+          APP_URL="https://${AZURE_WEBAPP_NAME}.azurewebsites.net"
+          echo "Smoke-checking ${APP_URL} (health path /_stcore/health)"
+          for i in $(seq 1 60); do
+            ROOT=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${APP_URL}/" || echo "000")
+            HEALTH=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${APP_URL}/_stcore/health" || echo "000")
+            echo "attempt ${i}: root=${ROOT} health=${HEALTH}"
+            if [ "${ROOT}" = "200" ] && [ "${HEALTH}" = "200" ]; then
+              echo "SMOKE PASS"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "SMOKE FAIL: app did not become healthy within the retry window"
+          exit 1
