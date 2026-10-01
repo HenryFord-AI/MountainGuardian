@@ -267,6 +267,102 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 .mg-entry-title {{ font-size: 14px; font-weight: 700; }}
 .mg-entry-desc {{ font-size: 12px; color: {TEXT_DIM}; margin-top: 4px; line-height: 1.6; }}
 
+/* ══ G04B shared product-page components (doc 05 §16–§37) ══════════════ */
+/* three-stage separation strip (Historical Replay, doc 05 §17) */
+.mg-timeline {{
+    display: flex; align-items: stretch; gap: 0; margin: 4px 0 2px 0;
+}}
+.mg-stage {{
+    flex: 1; padding: 10px 14px; border: 1px solid {BORDER};
+    background: {PANEL_ALT}; border-radius: 9px;
+}}
+.mg-stage + .mg-stage-join {{
+    flex: 0 0 34px; align-self: center; text-align: center;
+    color: {TEXT_DIM}; font-size: 14px;
+}}
+.mg-stage-k {{
+    font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase;
+}}
+.mg-stage-v {{ font-size: 12.5px; color: {TEXT}; margin-top: 3px; font-weight: 600; }}
+.mg-stage-n {{ font-size: 11px; color: {TEXT_DIM}; margin-top: 2px; line-height: 1.5; }}
+
+/* evidence rows (doc 05 §18, §35) */
+.mg-ev-row {{
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 7px 2px; border-bottom: 1px dashed {BORDER};
+    font-size: 12px; line-height: 1.55;
+}}
+.mg-ev-row:last-child {{ border-bottom: none; }}
+.mg-ev-id {{ font-family: {FONT_MONO}; font-size: 10.5px; color: {CYAN}; }}
+.mg-ev-meta {{ color: {TEXT_DIM}; font-size: 11px; }}
+
+/* key / value rows inside cards */
+.mg-kv {{
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 4.5px 0; font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+}}
+.mg-kv-k {{ color: {TEXT_DIM}; }}
+
+/* scan workflow steps (doc 05 §26) */
+.mg-steps {{ display: flex; align-items: flex-start; gap: 4px; flex-wrap: wrap; }}
+.mg-step {{ flex: 1; min-width: 96px; text-align: center; padding: 2px 4px; }}
+.mg-step-n {{
+    width: 26px; height: 26px; margin: 0 auto; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; border: 1px solid;
+}}
+.mg-step-zh {{ font-size: 11.5px; font-weight: 650; margin-top: 5px; }}
+.mg-step-en {{ font-size: 10px; color: {TEXT_DIM}; letter-spacing: 0.06em; }}
+.mg-step-ts {{ font-size: 9.5px; color: {TEXT_DIM}; margin-top: 2px;
+    font-family: {FONT_MONO}; }}
+.mg-step-join {{ flex: 0 0 14px; align-self: center; color: {TEXT_DIM};
+    text-align: center; font-size: 12px; }}
+
+/* compact audit / provenance tables (doc 05 §37) */
+.mg-table {{ width: 100%; border-collapse: collapse; font-size: 11.5px; }}
+.mg-table th {{
+    text-align: left; color: {TEXT_DIM}; font-weight: 600;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 5px 8px; border-bottom: 1px solid {BORDER_STRONG};
+}}
+.mg-table td {{
+    padding: 5px 8px; border-bottom: 1px dashed {BORDER};
+    color: {TEXT}; font-variant-numeric: tabular-nums; vertical-align: top;
+}}
+.mg-table tr:last-child td {{ border-bottom: none; }}
+
+/* critic / safety panels — purple family, shield semantics (doc 05 §21) */
+.mg-critic-panel {{
+    background: rgba(139,124,255,0.07);
+    border: 1px solid rgba(139,124,255,0.35);
+    border-radius: 9px; padding: 12px 14px;
+}}
+.mg-issue-row {{
+    font-size: 11.5px; line-height: 1.6; padding: 3px 0; color: {TEXT};
+}}
+
+/* horizontal DAG arrow (Intelligence Center, doc 03 §2) */
+.mg-dag-arrow {{
+    align-self: center; text-align: center; color: {CYAN};
+    font-size: 16px; padding: 0 2px;
+}}
+
+/* ring gauge wrapper (doc 05 §49 — number stays dominant) */
+.mg-ring-row {{ display: flex; align-items: center; gap: 16px; }}
+
+/* native Streamlit tabs inside the dark console */
+div[data-testid="stTabs"] button[data-baseweb="tab"] {{
+    background: {PANEL_ALT}; border: 1px solid {BORDER};
+    border-radius: 8px 8px 0 0; color: {TEXT_DIM}; font-weight: 600;
+}}
+div[data-testid="stTabs"] button[aria-selected="true"] {{
+    background: rgba(55,215,232,0.10); border-color: rgba(55,215,232,0.40);
+    color: {TEXT};
+}}
+div[data-testid="stTabs"] > div {{ border-bottom: 1px solid {BORDER}; }}
+
 /* ══ Generic markdown polish ═══════════════════════════════════════════ */
 [data-testid="stMarkdownContainer"] p {{ line-height: 1.55; }}
 section[data-testid="stSidebar"] .stButton button {{

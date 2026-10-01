@@ -8,7 +8,11 @@ Frozen rules verified here (doc 05, doc 06 §71–§75):
   * risk vocabulary LOW/MODERATE/ELEVATED/HIGH only; SKIPPED ≠ FAILED;
   * "Risk Index — not event probability" is always rendered;
   * the UI layer never computes risk, never imports providers / agents /
-    orchestrator, never triggers scans or writes snapshots;
+    database / security, never writes snapshots;
+  * G04B refinement: two narrow consume points are sanctioned (the Risk
+    Watch CTA → G03C orchestration entry; the replay/intel view models →
+    Case Pack loader + evidence schemas + deterministic replay engine);
+    see ALLOWED_BACKEND_IMPORTS below;
   * view models read region.json + snapshot store only (read-only);
   * no fabricated data: missing results surface as explicit empty states;
   * the Streamlit app boots and the frozen 4-entry navigation renders.
@@ -374,16 +378,46 @@ class TestMapView:
 
 
 # ═══ Structural isolation (same discipline as G03A/B/C suites) ═══════════════
+#
+# G04B refinement (gate G04B §10.1 / §9.2, documented — Overview rules unchanged):
+# the UI layer still never imports providers / agents / database / security /
+# network stacks anywhere. Two NARROW read/consume exceptions exist because the
+# frozen product pages must wire existing backend entries instead of
+# reimplementing them:
+#   * frontend/pages/risk_watch.py may import the single G03C orchestration
+#     entry (run_risk_scan) for the one sanctioned CTA;
+#   * the two G04B read-only view-model modules may consume the frozen
+#     Case Pack loader, evidence schemas and the deterministic replay
+#     orchestrator/engine (read paths only — no writes, no formulas).
+# Everything else — including all risk-formula functions and every snapshot
+# write — remains forbidden in every UI source.
 
 FORBIDDEN_IMPORT_ROOTS = {
-    "providers", "agents", "orchestration", "database", "mcp", "security",
+    "providers", "agents", "database", "mcp", "security",
     "tools", "requests", "urllib", "httpx", "aiohttp", "socket", "openai",
+}
+
+# Per-file sanctioned backend roots (G04B). "orchestration" stays forbidden
+# everywhere except these exact consume points.
+ALLOWED_BACKEND_IMPORTS = {
+    "frontend/pages/risk_watch.py": {"orchestration"},
+    "frontend/replay_viewmodels.py": {"orchestration", "tools", "schemas"},
+    "frontend/intel_viewmodels.py": {"tools", "schemas"},
+}
+
+# Modules the sanctioned orchestration imports may resolve to (no more).
+ALLOWED_ORCHESTRATION_MODULES = {
+    "orchestration.risk_watch_orchestrator",
+    "orchestration.risk_engine",
+    "orchestration.replay_orchestrator",
 }
 
 
 class TestUIIsolation:
     def test_no_forbidden_imports_in_ui_layer(self):
         for path, tree in _trees():
+            rel = path.relative_to(REPO_ROOT).as_posix()
+            allowed = ALLOWED_BACKEND_IMPORTS.get(rel, set())
             for node in ast.walk(tree):
                 modules = []
                 if isinstance(node, ast.ImportFrom):
@@ -392,24 +426,47 @@ class TestUIIsolation:
                     modules = [a.name for a in node.names]
                 for mod in modules:
                     root = mod.split(".")[0]
-                    assert root not in FORBIDDEN_IMPORT_ROOTS, (path, mod)
+                    if root == "orchestration":
+                        assert mod in ALLOWED_ORCHESTRATION_MODULES, (path, mod)
+                        assert "orchestration" in allowed, (path, mod)
+                        continue
+                    if root in FORBIDDEN_IMPORT_ROOTS:
+                        assert root in allowed, (path, mod)
 
     def test_ui_never_triggers_scans_or_writes(self):
-        text = _ui_source_text()
-        for forbidden in ("run_risk_scan", "insert_snapshot", "mark_invalid",
-                          "compute_risk_watch", "compute_C(", "compute_D(",
-                          "compute_O7(", "derive_static_baseline"):
-            assert forbidden not in text, forbidden
+        for path in UI_SOURCES:
+            rel = path.relative_to(REPO_ROOT).as_posix()
+            text = path.read_text(encoding="utf-8")
+            for forbidden in ("insert_snapshot", "mark_invalid",
+                              "compute_risk_watch", "compute_C(", "compute_D(",
+                              "compute_O7(", "derive_static_baseline"):
+                assert forbidden not in text, (rel, forbidden)
+            if rel != "frontend/pages/risk_watch.py":
+                # the single sanctioned CTA lives in risk_watch.py only
+                assert "run_risk_scan" not in text, rel
+
+    def test_risk_watch_cta_is_the_single_orchestration_entry(self):
+        src = (FRONTEND_DIR / "pages" / "risk_watch.py").read_text(encoding="utf-8")
+        assert src.count("run_risk_scan(") >= 1
+        # no direct collector / agent / synthesizer / critic invocation
+        for forbidden in ("WeatherCollector", "run_professional_agents",
+                          "RiskSynthesizer(", "Critic(", "compute_risk_watch"):
+            assert forbidden not in src, forbidden
 
     def test_viewmodel_and_map_have_no_streamlit_dependency(self):
-        for name in ("viewmodels.py", "map_view.py", "components.py"):
+        for name in ("viewmodels.py", "map_view.py", "components.py",
+                     "replay_viewmodels.py", "intel_viewmodels.py"):
             src = (FRONTEND_DIR / name).read_text(encoding="utf-8")
             assert "import streamlit" not in src, name
 
     def test_no_case_pack_access_from_ui(self):
-        text = _ui_source_text()
-        assert "data/cases" not in text
-        assert "case_loader" not in text
+        for path in UI_SOURCES:
+            rel = path.relative_to(REPO_ROOT).as_posix()
+            text = path.read_text(encoding="utf-8")
+            assert "data/cases" not in text, rel
+            if rel not in ("frontend/replay_viewmodels.py",
+                           "frontend/intel_viewmodels.py"):
+                assert "case_loader" not in text, rel
 
     def test_entry_point_is_new_file_legacy_app_untouched(self):
         assert APP_ENTRY.is_file()
@@ -447,9 +504,18 @@ class TestAppSmoke:
         assert "Current Risk" in body
         assert "Agent Collaboration" in body
 
-    def test_placeholder_pages_are_honest(self, at):
-        at.sidebar.radio[0].set_value("风险监测 · Risk Watch").run()
-        assert not at.exception
-        body = " ".join(str(m.value) for m in at.markdown)
-        assert "G04B" in body
-        assert "no fake data" in body.lower() or "Nothing on this page is simulated" in body
+    def test_product_pages_render_after_g04b(self, at):
+        """G04A placeholders were replaced by real G04B product pages.
+
+        The frozen navigation still switches cleanly and no page raises;
+        detailed per-page content assertions live in tests/test_g04b_ui.py.
+        """
+        for label, marker in (
+            ("历史验证 · Historical Replay", "Pre-event Evidence"),
+            ("风险监测 · Risk Watch", "Data Coverage"),
+            ("智能中心 · Intelligence Center", "Evidence Center"),
+        ):
+            at.sidebar.radio[0].set_value(label).run()
+            assert not at.exception, [e.value for e in at.exception]
+            body = " ".join(str(m.value) for m in at.markdown)
+            assert marker in body, (label, marker)

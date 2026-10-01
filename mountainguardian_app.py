@@ -1,20 +1,20 @@
 """
-山河守望者 · MountainGuardian v1.0 — Streamlit application entry (G04A).
+山河守望者 · MountainGuardian v1.0 — Streamlit application entry (G04B).
 
-Geospatial Intelligence × AI Mission Control UI foundation:
+Geospatial Intelligence × AI Mission Control:
   * frozen four-entry left navigation (doc 05 §4);
   * global header with Model Runtime / Last Scan / Data Sources / Agents;
-  * Overview page fully implemented (map-first, Current Risk, Agent
-    Collaboration, Trend, Evidence Coverage, quick entries);
-  * Historical Replay / Risk Watch / Intelligence Center render honest
-    G04B placeholders — no faked content.
+  * Overview (G04A), Historical Replay, Risk Watch and Intelligence Center
+    (G04B) — all four product pages consume read-only view models over the
+    frozen backend contracts; no page fabricates data.
 
 Run locally:
     streamlit run mountainguardian_app.py
 
-Session rules (doc 06 §72): page reruns only re-read local structured
-data (region config + SQLite snapshots). Nothing here calls DeepSeek,
-runs a Risk Scan, downloads anything or writes to the snapshot store.
+Session rules (doc 06 §72): page reruns only re-read local structured data
+(region config + SQLite snapshots + frozen Case Pack). The single exception
+is the Risk Watch page's explicit Run Risk Scan CTA, which calls the frozen
+G03C orchestration entry point on user request (gate G04B §10.1).
 """
 
 from __future__ import annotations
@@ -46,7 +46,13 @@ st.set_page_config(
 )
 
 from frontend import layout, theme                      # noqa: E402
-from frontend.pages import coming_soon, overview        # noqa: E402
+from frontend.pages import (                            # noqa: E402
+    coming_soon,
+    historical_replay,
+    intelligence_center,
+    overview,
+    risk_watch,
+)
 from frontend.viewmodels import build_overview_viewmodel  # noqa: E402
 
 logging.basicConfig(level=logging.INFO,
@@ -95,5 +101,11 @@ if page_key == "overview":
                 "The UI shows no data rather than fabricated values."
             )
             st.caption(f"Detail: {type(vm_error).__name__}: {vm_error}")
+elif page_key == "historical_replay":
+    historical_replay.render()
+elif page_key == "risk_watch":
+    risk_watch.render()
+elif page_key == "intelligence_center":
+    intelligence_center.render()
 else:
     coming_soon.render(page_key)
