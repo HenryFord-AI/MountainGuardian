@@ -330,8 +330,23 @@ class TestRiskWatch:
         ]
         assert calls == ["run_risk_scan"]
 
-    def test_empty_store_shows_honest_empty_states(self, page):
-        body = _body(page)
+    def test_empty_store_shows_honest_empty_states(self, tmp_path):
+        """Hermetic: pins an empty temp db — ambient runtime state (e.g. a
+        previous gate's gitignored snapshots) must not affect this check."""
+        import os
+
+        from streamlit.testing.v1 import AppTest
+
+        db = tmp_path / "empty-runtime.db"
+        os.environ["MOUNTAINGUARDIAN_DB_PATH"] = str(db)
+        try:
+            app = AppTest.from_file(str(APP_ENTRY), default_timeout=120)
+            app.run()
+            app.sidebar.radio[0].set_value("风险监测 · Risk Watch").run()
+            assert not app.exception, [e.value for e in app.exception]
+            body = _body(app)
+        finally:
+            os.environ.pop("MOUNTAINGUARDIAN_DB_PATH", None)
         assert "尚无风险扫描结果" in body or "No scan has run yet" in body
         assert "历史数据不足" in body
 
