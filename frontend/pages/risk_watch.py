@@ -414,11 +414,11 @@ def _render_drivers_evidence(vm: RiskWatchViewModel) -> None:
                 unsafe_allow_html=True,
             )
     if vm.limitations:
-        from frontend.display import limitation_label
+        from frontend.display import limitation_label, narrative_label
 
         with st.expander(f"本轮扫描局限（{len(vm.limitations)}）", expanded=False):
             for note in vm.limitations:
-                st.markdown(f"- {esc(limitation_label(str(note)))}")
+                st.markdown(f"- {esc(narrative_label(limitation_label(str(note))))}")
 
 
 def render() -> None:

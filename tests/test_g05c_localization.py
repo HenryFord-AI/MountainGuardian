@@ -79,7 +79,18 @@ def _cn_payload(risk_index=89.54, outlook=82.0):
                 "status": "COMPLETED", "confidence": 0.74,
                 "evidence_ids": ["RW-STATIC-TERRAIN", "RW-STATIC-CRYO"],
                 "fallback_used": False, "skip_reason": None,
-                "key_findings": ["静态易灾性较高（测试夹具）"],
+                # production-shaped citations of frozen config values —
+                # the display layer must render them as Chinese label：value
+                "key_findings": [
+                    "地形-地质条件：区域被判定为“极高山区—深切峡谷”"
+                    "（terrain_class=Extremely high mountain - deeply "
+                    "incised gorge），源区约5200 m",
+                    "物源条件：沟道内存在丰富的松散冰碛物与岩屑"
+                    "（loose_material_supply=Abundant loose moraine and "
+                    "rock debris）",
+                    "冰冻圈背景：源区为冰川发育区"
+                    "（glacierized_source_zone=True）",
+                ],
                 "missing_data": [], "limitations": ["无实时传感器（测试夹具）"],
             }, "audit": {"provider_status": "CONNECTED",
                          "model_id": "deepseek-flash", "latency_ms": 1200,
@@ -243,7 +254,6 @@ ALLOWED_PHRASE_PATTERNS = (
     r"WMO El Ni[oñ]o/La Ni[nñ]a Update \(August 2026\)",
     r"El Ni[oñ]o",
     r"La Ni[nñ]a",
-    r"Stage[\- ]?[AB]",
     r"UTC",
     r"ENSO",
     r"DAG",
@@ -256,10 +266,7 @@ ALLOWED_PHRASE_PATTERNS = (
     r"sentinel-2",
     r"stac",
     r"enso",
-    # frozen region-config field values cited verbatim by model findings
-    r"terrain_class=[^）)]*",
-    r"loose_material_supply=[^）)]*",
-    r"region\.json",
+    r"region\.json",   # frozen config filename (technical identifier)
     # run-id / replay identifiers
     r"rw-[0-9A-Za-z\-]+",
     r"rws-[0-9A-Za-z\-]+",
@@ -487,6 +494,84 @@ class TestDisplayMappings:
             "数据采集", "数据标准化", "保存快照",
             "智能体分析", "风险综合", "评审复核",
         )
+
+
+# ═══ G05C remediation: judge-facing prose polish ════════════════════════════
+#
+# Commander visual acceptance required (1) no visible Stage A / Stage B
+# engineering terminology in judge-facing prose and (2) long English
+# region-config field=value citations rendered as Chinese label：value.
+# Underlying identifiers, logic, config values and tests stay frozen.
+
+class TestRemediationProsePolish:
+    @pytest.fixture()
+    def pages(self, at_cn):
+        return {label: _render_page(at_cn, label) for label in _PAGES}
+
+    def test_stage_identifiers_absent_from_judge_prose(self, pages):
+        for label, body in pages.items():
+            assert "Stage" not in body, label
+
+    def test_replay_prose_uses_chinese_stage_wording(self, pages):
+        replay = pages["历史验证"]
+        assert "灾前阶段输入证据" in replay
+        assert "灾前分析与灾后验证严格分离" in replay
+        assert "灾前分析（灾前阶段冻结结果）" in replay
+        assert "灾前阶段结果未修改" in replay
+        assert "灾前阶段不可能知道的信息" in replay
+        # the frozen Stage-B attestation (rendered inside an expander, so
+        # asserted through the display mapping over the real VM string)
+        from frontend.replay_viewmodels import build_historical_replay_viewmodel
+        vm = build_historical_replay_viewmodel()
+        mapped = display.narrative_label(vm.stage_b_statement)
+        assert "Stage" not in mapped
+        assert "灾后验证阶段仅执行" in mapped
+        assert "灾后验证阶段未修改且不可修改灾前阶段" in mapped
+        for note in vm.stage_b_findings:
+            assert "Stage" not in display.narrative_label(note)
+
+    def test_config_value_citations_render_chinese(self, pages):
+        intel = pages["情报中心"]
+        for zh in ("地形类型：极高山区—深切峡谷",
+                   "松散物源：丰富的冰碛物与岩屑",
+                   "冰川化源区：是"):
+            assert zh in intel, zh
+        for raw in ("terrain_class=", "loose_material_supply=",
+                    "glacierized_source_zone="):
+            assert raw not in intel, raw
+            assert raw not in pages["历史验证"], raw
+
+    def test_narrative_label_mappings(self):
+        assert display.narrative_label(
+            "（terrain_class=Extremely high mountain - deeply incised "
+            "gorge）") == "（地形类型：极高山区—深切峡谷）"
+        assert display.narrative_label(
+            "loose_material_supply=Abundant loose moraine and rock debris"
+        ) == "松散物源：丰富的冰碛物与岩屑"
+        assert display.narrative_label(
+            "loose_material_supply=Abundant") == "松散物源：丰富"
+        assert display.narrative_label(
+            "glacierized_source_zone=True") == "冰川化源区：是"
+        assert display.narrative_label(
+            "Stage B 仅执行灾后回顾性验证") == "灾后验证阶段仅执行灾后回顾性验证"
+        assert display.narrative_label(
+            "（Stage A / Stage B 分离）") == "（灾前分析与灾后验证严格分离）"
+        # unknown narrative passes through untouched
+        assert display.narrative_label("无实时传感器") == "无实时传感器"
+
+    def test_frozen_identifiers_and_logic_untouched(self):
+        # orchestration identifiers keep their frozen English values
+        from orchestration.replay_orchestrator import run_stage_a, run_stage_b
+        from frontend.replay_viewmodels import build_historical_replay_viewmodel
+        vm = build_historical_replay_viewmodel()
+        assert vm.stage_a_unchanged is True
+        assert run_stage_a is not None and run_stage_b is not None
+        # raw config values are still the frozen English strings
+        from riskwatch.region import load_region
+        cfg = load_region("jilong_port").data
+        assert cfg["static_terrain_baseline"]["terrain_class"].startswith(
+            "Extremely high mountain")
+        assert cfg["cryosphere_baseline"]["glacierized_source_zone"] is True
 
 
 # ═══ Rendered four-page language audit (allowlist-based) ═════════════════════

@@ -275,14 +275,14 @@ def _render_quick_entries() -> None:
 def render(vm: OverviewViewModel) -> None:
     """Render the full Overview page inside bordered panels."""
     if vm.limitations:
-        from frontend.display import limitation_label
+        from frontend.display import limitation_label, narrative_label
 
         with st.expander(
             f"最近扫描记录的科学局限（{len(vm.limitations)}）",
             expanded=False,
         ):
             for note in vm.limitations:
-                st.markdown(f"- {esc(limitation_label(str(note)))}",
+                st.markdown(f"- {esc(narrative_label(limitation_label(str(note))))}",
                             unsafe_allow_html=False)
 
     row1_left, row1_right = st.columns([2.15, 1], gap="medium")

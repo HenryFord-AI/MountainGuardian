@@ -40,6 +40,7 @@ from frontend.components import (
 )
 from frontend.display import (
     agent_id_label,
+    narrative_label,
     raw_derived_label,
     scan_mode_label,
     status_label,
@@ -120,7 +121,8 @@ def _render_workspace(vm: IntelligenceViewModel) -> None:
     left, right = st.columns([1.3, 1], gap="medium")
     with left:
         findings = "".join(
-            f'<div class="mg-issue-row">• {esc(f)}</div>' for f in agent.findings[:6]
+            f'<div class="mg-issue-row">• {esc(narrative_label(f))}</div>'
+            for f in agent.findings[:6]
         ) or empty_state("该智能体无结构化关键发现记录。")
         st.markdown(
             f'<div class="mg-panel-alt">{card_title("关键发现")}'
@@ -143,12 +145,14 @@ def _render_workspace(vm: IntelligenceViewModel) -> None:
             + kv_row("输入摘要", agent.input_summary or "—")
             + (
                 '<div class="mg-metric-note">缺失数据：'
-                + esc("；".join(agent.missing_data[:4])) + "</div>"
+                + esc("；".join(narrative_label(x) for x in agent.missing_data[:4]))
+                + "</div>"
                 if agent.missing_data else ""
             )
             + (
                 '<div class="mg-metric-note">局限：'
-                + esc("；".join(agent.limitations[:3])) + "</div>"
+                + esc("；".join(narrative_label(x) for x in agent.limitations[:3]))
+                + "</div>"
                 if agent.limitations else ""
             )
             + (
