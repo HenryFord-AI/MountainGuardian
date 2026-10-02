@@ -46,7 +46,8 @@ An AAD app registration (`mountainguardian-gh-deploy`) trusts ID tokens from
 the G05A feature branch). Its service principal holds **Website Contributor
 on `rg-mountainguardian-v1` only** (least privilege). GitHub stores only the
 three non-secret identifiers (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-`AZURE_SUBSCRIPTION_ID`) as repository secrets; no Azure password or client
+`AZURE_SUBSCRIPTION_ID`) as repository **variables** (non-secret by nature;
+no Azure password or client
 secret exists anywhere. This stays inside the frozen architecture: no
 Key Vault, no managed identity for the app runtime, no infrastructure change.
 
@@ -135,8 +136,9 @@ az webapp create -n mountainguardian-v1 -g rg-mountainguardian-v1 \
 - Tests always run first; deploy job has `needs: test` — failed tests block
   deployment.
 - Auth: `azure/login@v2` with OIDC federated credentials; repository
-  secrets `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`
-  (non-secret identifiers; see §1.1).
+  variables `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`
+  (non-secret identifiers; see §1.1). The repository holds **zero GitHub
+  secrets** (verified 2026-10-02); in particular no DeepSeek key.
 - Artifact: tracked repository content zipped in CI, excluding `.git/`,
   `.github/`, `tests/`, `docs/`, `logs/`, venvs, `data/runtime/`, caches,
   `.env*`, `*.db*`, `*.publishsettings`, legacy Docker/cloudrun files.

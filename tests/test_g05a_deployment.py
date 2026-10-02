@@ -88,14 +88,16 @@ class TestWorkflow:
     def test_deploy_uses_oidc_federated_credentials(self, workflow_text):
         # Documented G05A deviation: Publish Profile retired by the Azure
         # platform; OIDC federated credentials approved by the Commander.
+        # The three Azure identifiers are non-secret repository variables.
         assert "azure/login@v2" in workflow_text
-        assert "secrets.AZURE_CLIENT_ID" in workflow_text
-        assert "secrets.AZURE_TENANT_ID" in workflow_text
-        assert "secrets.AZURE_SUBSCRIPTION_ID" in workflow_text
+        assert "vars.AZURE_CLIENT_ID" in workflow_text
+        assert "vars.AZURE_TENANT_ID" in workflow_text
+        assert "vars.AZURE_SUBSCRIPTION_ID" in workflow_text
         assert "id-token: write" in workflow_text
         assert "azure/webapps-deploy@v3" in workflow_text
         # No publish profile / password-based deployment credential remains.
         assert "AZURE_WEBAPP_PUBLISH_PROFILE" not in workflow_text
+        assert "publish-profile" not in workflow_text
 
     def test_workflow_contains_no_deepseek_key(self, workflow_text):
         assert "DEEPSEEK_API_KEY" not in workflow_text
