@@ -256,6 +256,10 @@ ALLOWED_PHRASE_PATTERNS = (
     r"sentinel-2",
     r"stac",
     r"enso",
+    # frozen region-config field values cited verbatim by model findings
+    r"terrain_class=[^）)]*",
+    r"loose_material_supply=[^）)]*",
+    r"region\.json",
     # run-id / replay identifiers
     r"rw-[0-9A-Za-z\-]+",
     r"rws-[0-9A-Za-z\-]+",
@@ -286,6 +290,7 @@ ALLOWED_WORDS = {
     # frozen Case Pack / persisted data values (field values, dataset and
     # location identifiers inside otherwise-Chinese model findings)
     "Jilong", "InSAR", "Abundant", "era5", "preferred", "ERA5", "Land",
+    "Case", "Pack",
 }
 
 _WORD_RE = re.compile(r"[A-Za-z]{2,}[A-Za-z0-9_\-]*")
