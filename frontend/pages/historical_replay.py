@@ -46,6 +46,7 @@ from frontend.components import (
 )
 from frontend.display import (
     agreement_label,
+    narrative_label,
     risk_label,
     status_label,
 )
@@ -82,7 +83,7 @@ def _render_case_header(vm: HistoricalReplayViewModel) -> None:
     st.markdown(
         scientific_note(
             "灾前分析仅使用事件发生前可获得的公开数据；灾后资料只用于验证，"
-            "从不进入灾前分析（Stage A / Stage B 分离）。"
+            "从不进入灾前分析（灾前分析与灾后验证严格分离）。"
         ),
         unsafe_allow_html=True,
     )
@@ -91,7 +92,7 @@ def _render_case_header(vm: HistoricalReplayViewModel) -> None:
 def _render_pre_event_evidence(vm: HistoricalReplayViewModel) -> None:
     st.markdown(
         card_title("灾前证据", accent="▤")
-        + f'<div class="mg-metric-note">Stage A 输入证据 · '
+        + f'<div class="mg-metric-note">灾前阶段输入证据 · '
         f'{len(vm.pre_event_evidence)} 条 · 仅灾前相位</div>',
         unsafe_allow_html=True,
     )
@@ -133,7 +134,8 @@ def _agent_block(agent) -> str:
     fallback = (' <span style="color:%s;font-size:10px;font-weight:700;">'
                 '回退</span>' % theme.ORANGE) if agent.fallback_used else ""
     findings = "".join(
-        f'<div class="mg-issue-row">• {esc(f)}</div>' for f in agent.findings[:5]
+        f'<div class="mg-issue-row">• {esc(narrative_label(f))}</div>'
+        for f in agent.findings[:5]
     ) or empty_state("无结构化关键发现记录。")
     missing = ""
     if agent.missing_data:
@@ -174,7 +176,7 @@ def _render_agents(vm: HistoricalReplayViewModel) -> None:
         st.markdown(_agent_block(vm.synthesizer), unsafe_allow_html=True)
         if vm.synthesis_summary:
             st.markdown(
-                f'<div class="mg-metric-note">综合结论：{esc(vm.synthesis_summary[:220])}'
+                f'<div class="mg-metric-note">综合结论：{esc(narrative_label(vm.synthesis_summary)[:220])}'
                 f' · 智能体一致性：{esc(agreement_label(vm.synthesis_agreement))}</div>',
                 unsafe_allow_html=True,
             )
@@ -205,7 +207,7 @@ def _render_agents(vm: HistoricalReplayViewModel) -> None:
 def _render_risk_result(vm: HistoricalReplayViewModel) -> None:
     st.markdown(
         card_title("风险评估结果", accent="◉")
-        + '<div class="mg-metric-note">灾前分析（Stage A 冻结结果）</div>',
+        + '<div class="mg-metric-note">灾前分析（灾前阶段冻结结果）</div>',
         unsafe_allow_html=True,
     )
     color = theme.risk_color(vm.risk_level)
@@ -270,7 +272,7 @@ def _render_post_event(vm: HistoricalReplayViewModel) -> None:
                     unsafe_allow_html=True,
         )
         st.markdown(
-            kv_row("灾前阶段（Stage A）结果未修改",
+            kv_row("灾前阶段结果未修改",
                    "是" if vm.stage_a_unchanged else "否",
                    theme.GREEN if vm.stage_a_unchanged else theme.RED),
             unsafe_allow_html=True,
@@ -284,21 +286,21 @@ def _render_post_event(vm: HistoricalReplayViewModel) -> None:
             unsafe_allow_html=True,
         )
         st.markdown(
-            '<div class="mg-metric-note">Stage B 仅做方向性验证，不产生对齐分数、'
-            "不修改 Stage A 结果。</div>",
+            '<div class="mg-metric-note">灾后验证仅做方向性对比，不产生对齐分数、'
+            "不修改灾前阶段结果。</div>",
             unsafe_allow_html=True,
         )
     with st.expander("方向性验证结论（灾前因素 对比 灾后调查）",
                      expanded=False):
         for note in vm.stage_b_findings:
-            st.markdown(f"- {esc(note)}")
+            st.markdown(f"- {esc(narrative_label(note))}")
         st.markdown(
-            scientific_note(vm.stage_b_statement),
+            scientific_note(narrative_label(vm.stage_b_statement)),
         )
-    with st.expander("灾前阶段（Stage A）不可能知道的信息（冻结不可知集）",
+    with st.expander("灾前阶段不可能知道的信息（冻结不可知集）",
                      expanded=False):
         for note in vm.stage_b_could_not_know:
-            st.markdown(f"- {esc(note)}")
+            st.markdown(f"- {esc(narrative_label(note))}")
 
 
 def _render_limitations(vm: HistoricalReplayViewModel) -> None:

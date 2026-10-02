@@ -335,3 +335,66 @@ def optional_source_key_label(key) -> str:
 
 def agent_id_label(agent_id) -> str:
     return _lookup(AGENT_ID_LABELS, agent_id)
+
+
+# ─── G05C remediation: judge-facing prose polish (display-layer only) ───────
+#
+# 1) Stage A / Stage B are frozen orchestration identifiers — logic, schemas
+#    and tests keep them verbatim. In judge-facing prose they render through
+#    this mapping so normal reading text stays Chinese.
+# 2) Long human-readable frozen region-config field=value fragments cited
+#    inside Chinese model narrative render as Chinese label：value pairs.
+#    The frozen raw config values are never modified.
+STAGE_PROSE_PHRASES = (
+    ("Stage A / Stage B 分离", "灾前分析与灾后验证严格分离"),
+    (" Stage-A ", "灾前阶段"),
+    (" Stage A ", "灾前阶段"),
+    (" Stage B ", "灾后验证阶段"),
+    ("Stage-A ", "灾前阶段"),
+    ("Stage-A", "灾前阶段"),
+    ("Stage A ", "灾前阶段"),
+    ("Stage A", "灾前阶段"),
+    ("Stage-B ", "灾后验证阶段"),
+    ("Stage-B", "灾后验证阶段"),
+    ("Stage B ", "灾后验证阶段"),
+    ("Stage B", "灾后验证阶段"),
+)
+
+CONFIG_PROSE_PHRASES = (
+    ("terrain_class=Extremely high mountain - deeply incised gorge; "
+     "steep slopes, narrow channel", "地形类型：极高山—深切峡谷，坡陡沟窄"),
+    ("terrain_class=Extremely high mountain - deeply incised gorge",
+     "地形类型：极高山区—深切峡谷"),
+    ("loose_material_supply=Abundant loose moraine and rock debris in the "
+     "channel, entrainable by high-speed ice avalanches",
+     "松散物源：沟道内丰富的冰碛物与岩屑，可被高速冰崩裹挟输移"),
+    ("loose_material_supply=Abundant loose moraine and rock debris",
+     "松散物源：丰富的冰碛物与岩屑"),
+    ("loose_material_supply=Abundant", "松散物源：丰富"),
+    ("glacierized_source_zone=True", "冰川化源区：是"),
+    ("glacierized_source_zone=False", "冰川化源区：否"),
+    ("tectonic_context=Near the India-Eurasia plate collision boundary; "
+     "faults and joints developed (long-term stability background only, "
+     "not used for imminent-failure timing)",
+     "构造背景：印度—欧亚板块碰撞边界附近；断裂与节理发育"
+     "（仅作长期稳定背景，不用于临灾时间判断）"),
+)
+
+
+def narrative_label(text) -> str:
+    """Chinese display polish for model/backend narrative prose rendered on
+    judge-facing pages: frozen Stage identifiers and long English
+    region-config field=value citations become Chinese wording /
+    label：value pairs.
+
+    Presentation-layer only — frozen identifiers, config values, formulas
+    and audit structures are untouched; unknown text passes through.
+    """
+    value = str(text or "")
+    for src, zh in CONFIG_PROSE_PHRASES:
+        if src in value:
+            value = value.replace(src, zh)
+    for src, zh in STAGE_PROSE_PHRASES:
+        if src in value:
+            value = value.replace(src, zh)
+    return value
