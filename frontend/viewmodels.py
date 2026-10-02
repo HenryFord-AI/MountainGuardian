@@ -172,6 +172,8 @@ def _latest_valid_snapshot(store: SnapshotStore, region_id: str) -> Optional[dic
 
 
 def _agent_cards(payload: dict) -> tuple:
+    from frontend.display import skip_reason_label, status_label
+
     cards: list[AgentCardVM] = []
     results = payload.get("agent_results") or {}
     for key in ("glacier_geology", "weather_hydrology", "remote_sensing"):
@@ -182,9 +184,9 @@ def _agent_cards(payload: dict) -> tuple:
         extra = ""
         status = str(out.get("status") or "PENDING")
         if status == "SKIPPED" and out.get("skip_reason"):
-            extra = str(out["skip_reason"]).replace("_", " ").lower()
+            extra = skip_reason_label(out["skip_reason"])
         if out.get("fallback_used"):
-            extra = (extra + " · " if extra else "") + "deterministic fallback"
+            extra = (extra + " · " if extra else "") + "确定性回退"
         cards.append(AgentCardVM(
             key=key, name_en=name_en, name_zh=name_zh,
             status=status,
@@ -209,7 +211,7 @@ def _agent_cards(payload: dict) -> tuple:
         evidence_ids=syn_ids,
         is_ai_layer=True,
         fallback_used=bool(syn_out.get("fallback_used")),
-        extra="deterministic fallback" if syn_out.get("fallback_used") else "",
+        extra="确定性回退" if syn_out.get("fallback_used") else "",
     ))
 
     critic_out = (payload.get("critic") or {}).get("verdict") or {}
@@ -227,7 +229,7 @@ def _agent_cards(payload: dict) -> tuple:
         evidence_count=None,
         is_ai_layer=True,
         fallback_used=bool(critic_out.get("fallback_used")),
-        extra=f"severity {severity}" if severity else "",
+        extra=f"严重性 {status_label(severity)}" if severity else "",
     ))
     return tuple(cards)
 
@@ -396,15 +398,15 @@ def build_overview_viewmodel(
 # recomputed, never re-derived, never invented.
 
 # Frozen G03C workflow stages (orchestration/risk_watch_orchestrator.py)
-# mapped to the six user-facing steps of doc 05 §26. Each UI step is DONE
-# only when the persisted stage trace records its completion stage.
+# mapped to the six user-facing steps of doc 05 §26 / doc 08 §5 (Chinese
+# display labels; the stage identifiers themselves are frozen and unchanged).
 SCAN_STEP_STAGES = (
-    (1, "采集数据", "Collect", "NORMALIZED"),
-    (2, "标准化处理", "Normalize", "VALIDATED"),
+    (1, "数据采集", "Collect", "NORMALIZED"),
+    (2, "数据标准化", "Normalize", "VALIDATED"),
     (3, "保存快照", "Snapshot", "SNAPSHOT_SAVED"),
-    (4, "专业智能体分析", "Agents", "AGENTS_COMPLETED"),
+    (4, "智能体分析", "Agents", "AGENTS_COMPLETED"),
     (5, "风险综合", "Synthesis", "SYNTHESIZED"),
-    (6, "质检复核", "Review", "REVIEWED"),
+    (6, "评审复核", "Review", "REVIEWED"),
 )
 
 # Display labels for the frozen optional evidence sources (doc 04 §19).
@@ -416,10 +418,10 @@ OPTIONAL_SOURCE_LABELS = {
     "RW-OPT-ENSO": "ENSO 气候背景",
 }
 OPTIONAL_SOURCE_NOTES = {
-    "RW-OPT-SATELLITE": "optional · 可选管线，v1.0 未接入数值公式",
-    "RW-OPT-HYDRO": "optional · v1.0 非 P0 数据源",
-    "RW-OPT-SOIL": "optional · 辅助证据，未接入数值公式",
-    "RW-OPT-ENSO": "optional · context-only，不构成因果",
+    "RW-OPT-SATELLITE": "可选 · 可选管线，v1.0 未接入数值公式",
+    "RW-OPT-HYDRO": "可选 · v1.0 未接入该数据源",
+    "RW-OPT-SOIL": "可选 · 辅助证据，未接入数值公式",
+    "RW-OPT-ENSO": "可选 · 仅气候背景，不构成因果",
 }
 
 
@@ -512,7 +514,13 @@ _QUALITY_STATUS = {
 
 
 def _source_rows(payload: dict, region: RegionConfig) -> tuple:
-    """Required + optional coverage rows from stored data-quality state."""
+    """Required + optional coverage rows from stored data-quality state.
+
+    G05C: point names are shown through the frozen display mapping
+    (region.json values stay English-frozen; presentation only).
+    """
+    from frontend.display import point_name_label
+
     rows: list[SourceStatusVM] = []
     dq = payload.get("data_quality") or {}
     point_quality = dq.get("point_quality") or {}
@@ -521,14 +529,14 @@ def _source_rows(payload: dict, region: RegionConfig) -> tuple:
         status, quality = _QUALITY_STATUS.get(q.upper(), ("MISSING", "MISSING"))
         rows.append(SourceStatusVM(
             key=point.point_id,
-            label=f"天气数据（Open-Meteo）· {point.name}",
+            label=f"天气数据（Open-Meteo）· {point_name_label(point.name)}",
             status=status, quality=quality, required=True,
-            note="required · 监测点观测/预报窗",
+            note="必需 · 监测点观测/预报窗",
         ))
     rows.append(SourceStatusVM(
-        key="static-terrain", label="地形 / 冰冻圈静态基线（region config）",
+        key="static-terrain", label="地形 / 冰冻圈静态基线（区域配置）",
         status="AVAILABLE", quality="GOOD", required=True,
-        note="required · 静态易灾基线 B（冻结配置）",
+        note="必需 · 静态易灾基线 B（冻结配置）",
     ))
     available = {
         str(x) for x in (payload.get("optional_evidence_availability") or ())

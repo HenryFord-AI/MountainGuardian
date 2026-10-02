@@ -1,5 +1,5 @@
 """
-MountainGuardian G04A – Overview page.
+MountainGuardian G04A – Overview page (总览).
 
 The first screen must answer within seconds (doc 05 §8):
   1. Where is the system monitoring?      → main map (region + points)
@@ -12,6 +12,9 @@ Frozen layout (doc 05 §9): map-first, Current Risk on the right,
 agent collaboration + trend below, quick entries + evidence at the
 bottom. All values come from the read-only OverviewViewModel — this
 page never computes risk, never calls models, never writes snapshots.
+
+G05C (doc 08): visible page language is Chinese; technical identifiers
+(Evidence IDs, Run ID, UTC, brand names) stay verbatim per the allowlist.
 """
 
 from __future__ import annotations
@@ -31,6 +34,13 @@ from frontend.components import (
     flow_arrow,
     risk_card_html,
 )
+from frontend.display import (
+    point_id_label,
+    quality_label,
+    risk_label,
+    scan_mode_label,
+    status_label,
+)
 from frontend.map_view import build_overview_map
 from frontend.viewmodels import OverviewViewModel
 
@@ -38,11 +48,11 @@ MAP_HEIGHT = 560
 
 
 def _render_map(vm: OverviewViewModel) -> None:
-    st.markdown(card_title("Main Map", accent="◈") + "", unsafe_allow_html=True)
+    st.markdown(card_title("主地图", accent="◈") + "", unsafe_allow_html=True)
     map_html = build_overview_map(vm.monitoring_points, height=MAP_HEIGHT)
     if map_html is None:
         st.markdown(
-            empty_state("No monitoring points available for this region."),
+            empty_state("该区域暂无可用监测点。"),
             unsafe_allow_html=True,
         )
         return
@@ -50,24 +60,24 @@ def _render_map(vm: OverviewViewModel) -> None:
     # markdown cannot wrap a component in a shared div.
     st_components.html(map_html, height=MAP_HEIGHT + 12, scrolling=False)
     st.markdown(
-        '<div class="mg-map-caption">Monitoring region: '
-        f"{esc(vm.region_name)} · representative monitoring coordinates with "
-        "documented uncertainty (region config, frozen). 2D view — no 3D GIS, "
-        "no spatial re-analysis in the UI.</div>",
+        '<div class="mg-map-caption">监测区域：'
+        f"{esc(vm.region_name_zh or vm.region_name)} · "
+        "代表性监测坐标（不确定性已记录，区域配置冻结）。"
+        "二维视图 — 无三维 GIS，UI 不做空间再分析。</div>",
         unsafe_allow_html=True,
     )
 
 
 def _render_current_risk(vm: OverviewViewModel) -> None:
-    st.markdown(card_title("Current Risk", accent="●"), unsafe_allow_html=True)
+    st.markdown(card_title("当前风险", accent="●"), unsafe_allow_html=True)
     if vm.fallback_mode:
         st.markdown(
-            '<div class="mg-fallback">AI Runtime · Fallback Mode</div>',
+            '<div class="mg-fallback">AI 运行时 · 回退模式</div>',
             unsafe_allow_html=True,
         )
         st.caption(
-            "Deterministic Risk Index remains valid; AI explanation layers "
-            "ran on rule-based fallbacks (never disguised as model output)."
+            "确定性风险指数仍然有效；AI 解释层使用了基于规则的回退"
+            "（绝不伪装为模型输出）。"
         )
     cov = vm.coverage
     st.markdown(
@@ -82,25 +92,23 @@ def _render_current_risk(vm: OverviewViewModel) -> None:
         ),
         unsafe_allow_html=True,
     )
-    with st.expander("Top Risk Drivers (engine contributions)", expanded=False):
+    with st.expander("主要风险驱动因素（引擎贡献分解）", expanded=False):
         st.markdown(drivers_html(vm.top_drivers), unsafe_allow_html=True)
         st.markdown(
-            '<div class="mg-metric-note">Contribution points are deterministic '
-            "engine output (doc 04). Static drivers come from the frozen "
-            "regional susceptibility baseline.</div>",
+            '<div class="mg-metric-note">贡献分值为确定性引擎输出（文档 04）。'
+            "静态驱动因素来自冻结的区域易灾基线。</div>",
             unsafe_allow_html=True,
         )
 
 
 def _render_agents(vm: OverviewViewModel) -> None:
     st.markdown(
-        card_title("Agent Collaboration", accent="✦"), unsafe_allow_html=True
+        card_title("智能体协作", accent="✦"), unsafe_allow_html=True
     )
     if not vm.agents:
         st.markdown(
             empty_state(
-                "Agent run states appear here after the first completed "
-                "Risk Watch scan."
+                "智能体运行状态将在第一次完成风险扫描后显示在此处。"
             ),
             unsafe_allow_html=True,
         )
@@ -121,20 +129,20 @@ def _render_agents(vm: OverviewViewModel) -> None:
             col.markdown(agent_card_html(card), unsafe_allow_html=True)
 
     st.markdown(
-        '<div class="mg-metric-note">Professional agents → Risk Synthesizer → '
-        "Critic review. Status, confidence and evidence counts only — full "
-        "structured outputs live in the Intelligence Center.</div>",
+        '<div class="mg-metric-note">专业智能体 → 风险综合智能体 → '
+        "评审智能体复核。此处仅显示状态、置信度与证据数量 — "
+        "完整结构化输出见情报中心。</div>",
         unsafe_allow_html=True,
     )
 
 
 def _render_trend(vm: OverviewViewModel) -> None:
     st.markdown(
-        card_title("Risk Trend · Recent Scan", accent="◫"), unsafe_allow_html=True
+        card_title("风险趋势 · 最近扫描", accent="◫"), unsafe_allow_html=True
     )
     if not vm.has_result:
         st.markdown(
-            empty_state("No scan history yet — trend starts after the first scan."),
+            empty_state("尚无扫描历史 — 第一次扫描后开始形成趋势。"),
             unsafe_allow_html=True,
         )
         return
@@ -142,38 +150,40 @@ def _render_trend(vm: OverviewViewModel) -> None:
     if vm.trend_status in ("NO_HISTORY", "INSUFFICIENT_HISTORY"):
         st.markdown(
             empty_state(
-                "Historical trend will appear after more scans. "
-                "History is never fabricated or pre-filled."
+                "历史数据不足，完成更多扫描后将形成趋势。"
+                "历史从不伪造或预填。"
             ),
             unsafe_allow_html=True,
         )
     for tp in vm.trend_points:
         level_color = theme.risk_color(tp.risk_level)
         when = tp.created_at.replace("T", " ")[:16]
-        badge = f' <span style="font-size:10px;color:{theme.TEXT_DIM};">[{esc(tp.scan_mode)}]</span>'
+        badge = (f' <span style="font-size:10px;color:{theme.TEXT_DIM};">'
+                 f'[{esc(scan_mode_label(tp.scan_mode))}]</span>')
         st.markdown(
             f'<div class="mg-trend-row">'
             f'<span class="mg-trend-k">{esc(when)} UTC{badge}</span>'
             f'<span><b style="color:{level_color};">{tp.risk_index_rounded:.2f}</b>'
-            f' &nbsp;{chip(tp.risk_level, level_color, small=True)}</span></div>',
+            f' &nbsp;{chip(risk_label(tp.risk_level), level_color, small=True)}</span></div>',
             unsafe_allow_html=True,
         )
 
     st.markdown(
-        f'<div class="mg-metric-note">Last scan: <b>{esc(vm.last_scan_status or "—")}</b>'
-        f' · mode {esc(vm.last_scan_mode or "—")} · run {esc((vm.run_id or "—")[:34])}</div>',
+        f'<div class="mg-metric-note">最近扫描：<b>{esc(status_label(vm.last_scan_status) if vm.last_scan_status else "—")}</b>'
+        f' · 模式 {esc(scan_mode_label(vm.last_scan_mode) if vm.last_scan_mode else "—")}'
+        f' · 运行编号 {esc((vm.run_id or "—")[:34])}</div>',
         unsafe_allow_html=True,
     )
 
 
 def _render_evidence(vm: OverviewViewModel) -> None:
     st.markdown(
-        card_title("Evidence · Data Coverage", accent="▤"), unsafe_allow_html=True
+        card_title("证据 · 数据覆盖", accent="▤"), unsafe_allow_html=True
     )
     cov = vm.coverage
     if not vm.has_result:
         st.markdown(
-            empty_state("Evidence coverage appears after the first completed scan."),
+            empty_state("证据覆盖将在第一次完成扫描后显示。"),
             unsafe_allow_html=True,
         )
         return
@@ -184,76 +194,80 @@ def _render_evidence(vm: OverviewViewModel) -> None:
         if cov.optional_available is not None else "—"
     )
     st.markdown(
-        f'<div class="mg-trend-row"><span class="mg-trend-k">Required data</span>'
+        f'<div class="mg-trend-row"><span class="mg-trend-k">必需数据</span>'
         f'<span><b>{esc(req)}</b></span></div>'
-        f'<div class="mg-trend-row"><span class="mg-trend-k">Optional data</span>'
+        f'<div class="mg-trend-row"><span class="mg-trend-k">可选数据</span>'
         f'<span><b>{esc(opt)}</b></span></div>',
         unsafe_allow_html=True,
     )
 
     if cov.point_quality:
         chips = " ".join(
-            chip(f"{pid}: {q}", theme.GREEN if q == "FRESH" else theme.ORANGE, small=True)
+            chip(f"{point_id_label(pid)}: {quality_label(q)}",
+                 theme.GREEN if q == "FRESH" else theme.ORANGE, small=True)
             for pid, q in sorted(cov.point_quality.items())
         )
         st.markdown(f'<div style="margin-top:8px;">{chips}</div>', unsafe_allow_html=True)
 
     if cov.satellite_pipeline_available is False:
         st.markdown(
-            empty_state("No usable new satellite imagery for this scan. "
-                        "Optional source — scan validity unaffected."),
+            empty_state("本轮扫描无可用新卫星影像。"
+                        "可选数据源 — 不影响扫描有效性。"),
             unsafe_allow_html=True,
         )
     if cov.optional_missing:
+        from frontend.display import optional_source_key_label
+
         st.markdown(
-            '<div class="mg-metric-note">Missing optional sources: '
-            + esc(", ".join(str(x) for x in cov.optional_missing))
+            '<div class="mg-metric-note">缺失可选数据源：'
+            + esc("、".join(optional_source_key_label(x)
+                           for x in cov.optional_missing))
             + "</div>",
             unsafe_allow_html=True,
         )
 
-    with st.expander("Evidence IDs used in this scan", expanded=False):
+    with st.expander("本轮扫描使用的证据编号", expanded=False):
         any_ev = False
         for card in vm.agents:
             if card.evidence_ids:
                 any_ev = True
                 st.markdown(
                     f'<div style="font-size:11.5px;color:{theme.TEXT_DIM};'
-                    f'margin:6px 0 3px 0;">{esc(card.name_en)}</div>'
+                    f'margin:6px 0 3px 0;">{esc(card.name_zh)}</div>'
                     + evidence_chips_html(card.evidence_ids),
                     unsafe_allow_html=True,
                 )
         if not any_ev:
-            st.markdown(empty_state("No evidence records in this scan."),
+            st.markdown(empty_state("本轮扫描无证据记录。"),
                         unsafe_allow_html=True)
         st.markdown(
-            '<div class="mg-metric-note">Only evidence actually recorded by the '
-            "Risk Watch run is listed — the UI never invents evidence.</div>",
+            '<div class="mg-metric-note">仅列出风险监测运行实际记录的证据 — '
+            "UI 从不虚构证据。</div>",
             unsafe_allow_html=True,
         )
 
 
 def _render_quick_entries() -> None:
-    st.markdown(card_title("Quick Entries", accent="➤"), unsafe_allow_html=True)
+    st.markdown(card_title("快速入口", accent="➤"), unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     with c1:
         st.markdown(
-            '<div class="mg-entry-title">Historical Replay</div>'
-            '<div class="mg-entry-desc">Research validation on the frozen '
-            "2026-08-26 Jilong case — pre-event evidence only.</div>",
+            '<div class="mg-entry-title">历史验证</div>'
+            '<div class="mg-entry-desc">基于冻结的 2026-08-26 吉隆案例开展'
+            "研究验证 — 仅使用灾前证据。</div>",
             unsafe_allow_html=True,
         )
-        st.button("Enter Historical Replay →", use_container_width=True,
+        st.button("进入历史验证 →", use_container_width=True,
                   key="mg_quick_replay",
                   on_click=layout.navigate_to, args=("historical_replay",))
     with c2:
         st.markdown(
-            '<div class="mg-entry-title">Risk Watch</div>'
-            '<div class="mg-entry-desc">Run a live risk scan on the current '
-            "monitoring region and inspect what changed.</div>",
+            '<div class="mg-entry-title">风险监测</div>'
+            '<div class="mg-entry-desc">对当前监测区域执行实时风险扫描，'
+            "并查看本轮变化。</div>",
             unsafe_allow_html=True,
         )
-        st.button("Enter Risk Watch →", use_container_width=True,
+        st.button("进入风险监测 →", use_container_width=True,
                   key="mg_quick_watch",
                   on_click=layout.navigate_to, args=("risk_watch",))
 
@@ -261,12 +275,15 @@ def _render_quick_entries() -> None:
 def render(vm: OverviewViewModel) -> None:
     """Render the full Overview page inside bordered panels."""
     if vm.limitations:
+        from frontend.display import limitation_label
+
         with st.expander(
-            f"Scientific limitations recorded in the latest scan ({len(vm.limitations)})",
+            f"最近扫描记录的科学局限（{len(vm.limitations)}）",
             expanded=False,
         ):
             for note in vm.limitations:
-                st.markdown(f"- {esc(str(note))}", unsafe_allow_html=False)
+                st.markdown(f"- {esc(limitation_label(str(note)))}",
+                            unsafe_allow_html=False)
 
     row1_left, row1_right = st.columns([2.15, 1], gap="medium")
     with row1_left:

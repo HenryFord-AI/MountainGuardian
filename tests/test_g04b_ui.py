@@ -221,7 +221,7 @@ class TestVisualReferencePack:
 class TestHistoricalReplay:
     @pytest.fixture()
     def page(self, at):
-        at.sidebar.radio[0].set_value("历史验证 · Historical Replay").run()
+        at.sidebar.radio[0].set_value("历史验证").run()
         return at
 
     def test_page_renders_without_exception(self, page):
@@ -229,15 +229,15 @@ class TestHistoricalReplay:
 
     def test_stage_separation_visible(self, page):
         body = _body(page)
-        assert "PRE-EVENT" in body
-        assert "EVENT" in body
-        assert "POST-EVENT" in body
-        assert "Post-event Validation" in body
+        assert "灾前阶段" in body
+        assert "事件发生" in body
+        assert "灾后验证" in body
+        assert "不用于分析，仅用于验证" in body
 
     def test_baseline_susceptibility_not_probability(self, page):
         body = _body(page)
-        assert "Baseline Susceptibility Index" in body
-        assert "Not event probability" in body or "not event probability" in body
+        assert "基线易感性指数" in body
+        assert "不是事件发生概率" in body
         assert "91" in body
         # forbidden probability / prediction marketing language never appears
         for banned in ("91%", "发生概率 91", "prediction accuracy",
@@ -246,25 +246,27 @@ class TestHistoricalReplay:
 
     def test_critic_result_renders(self, page):
         body = _body(page)
-        assert "PASS WITH LIMITATIONS" in body or "PASS_WITH_LIMITATIONS" in body
+        assert "通过，但存在局限" in body
 
     def test_post_event_evidence_not_in_stage_a_panel(self, page):
         body = _body(page)
-        head, _, validation = body.partition("Post-event Validation")
+        # partition on the post-event VALIDATION SECTION marker (unique —
+        # the timeline chip 灾后验证 also appears near the page top)
+        head, _, validation = body.partition("不用于分析，仅用于验证")
         assert validation, "validation section missing"
         assert "EV-SAT-POST" not in head
         assert "EV-SAT-POST" in validation
 
     def test_pre_event_evidence_panel_carries_pre_event_phase(self, page):
         body = _body(page)
-        head, _, _ = body.partition("Post-event Validation")
-        assert "PRE-EVENT" in head
+        head, _, _ = body.partition("不用于分析，仅用于验证")
+        assert "灾前阶段" in head
 
     def test_no_chain_of_thought_or_prompts(self, page):
         body = _body(page).lower()
         for banned in ("chain of thought", "chain-of-thought",
                        "system prompt", "hidden reasoning"):
-            assert banned not in body or "不展示" in _body(page)
+            assert banned not in body
 
     def test_viewmodel_consumes_engine_index_verbatim(self):
         from frontend.replay_viewmodels import build_historical_replay_viewmodel
@@ -296,7 +298,7 @@ class TestHistoricalReplay:
 class TestRiskWatch:
     @pytest.fixture()
     def page(self, at):
-        at.sidebar.radio[0].set_value("风险监测 · Risk Watch").run()
+        at.sidebar.radio[0].set_value("风险监测").run()
         return at
 
     def test_page_renders_without_exception(self, page):
@@ -304,15 +306,17 @@ class TestRiskWatch:
 
     def test_single_primary_cta_exists(self, page):
         labels = [b.label for b in page.button]
-        cta = [x for x in labels if "Run Risk Scan" in x]
+        cta = [x for x in labels if "执行风险扫描" in x]
         assert cta, labels
+        # G05C: the English CTA label must not be retained
+        assert not any("Run Risk Scan" in x for x in labels), labels
 
     def test_cta_repeated_click_blocked_while_running(self, at):
         at.session_state["mg_rw_running"] = True
         at.run()
         try:
-            cta = [b for b in at.button if "Run Risk Scan" in b.label
-                   or "Running" in b.label]
+            cta = [b for b in at.button if "执行风险扫描" in b.label
+                   or "扫描执行中" in b.label]
             assert cta and all(b.disabled for b in cta)
         finally:
             at.session_state["mg_rw_running"] = False
@@ -342,12 +346,12 @@ class TestRiskWatch:
         try:
             app = AppTest.from_file(str(APP_ENTRY), default_timeout=120)
             app.run()
-            app.sidebar.radio[0].set_value("风险监测 · Risk Watch").run()
+            app.sidebar.radio[0].set_value("风险监测").run()
             assert not app.exception, [e.value for e in app.exception]
             body = _body(app)
         finally:
             os.environ.pop("MOUNTAINGUARDIAN_DB_PATH", None)
-        assert "尚无风险扫描结果" in body or "No scan has run yet" in body
+        assert "尚无风险扫描结果" in body
         assert "历史数据不足" in body
 
     def test_viewmodel_reads_stored_values_verbatim(self, store_factory):
@@ -440,28 +444,28 @@ class TestRiskWatchSeeded:
 
     @pytest.fixture()
     def page(self, at_seeded):
-        at_seeded.sidebar.radio[0].set_value("风险监测 · Risk Watch").run()
+        at_seeded.sidebar.radio[0].set_value("风险监测").run()
         return at_seeded
 
     def test_current_risk_renders_stored_value(self, page):
         assert not page.exception, [e.value for e in page.exception]
         body = _body(page)
-        assert "Current Risk" in body
+        assert "当前风险" in body
         assert "89.5" in body
-        assert "HIGH" in body
-        assert "not event probability" in body or "Not event probability" in body
+        assert "高" in body
+        assert "风险指数不是事件发生概率" in body
 
     def test_outlook_renders_stored_value(self, page):
         body = _body(page)
-        assert "7-Day Outlook" in body
+        assert "未来7天风险展望" in body
         assert "82" in body
-        assert "Outlook Index — not event probability" in body
+        assert "展望指数不是事件发生概率" in body
 
     def test_coverage_and_scan_state_render(self, page):
         body = _body(page)
-        assert "Data Coverage" in body
-        assert "Scan Progress" in body
-        assert "COMPLETED" in body
+        assert "数据覆盖" in body
+        assert "扫描进度" in body
+        assert "已完成" in body
         assert "rw-g04b-test" in body
 
     def test_what_changed_honest_empty_with_single_snapshot(self, page):
@@ -478,35 +482,33 @@ class TestRiskWatchSeeded:
 class TestIntelligenceCenter:
     @pytest.fixture()
     def page(self, at_seeded):
-        at_seeded.sidebar.radio[0].set_value("智能中心 · Intelligence Center").run()
+        at_seeded.sidebar.radio[0].set_value("情报中心").run()
         return at_seeded
 
     def test_three_tabs_exist(self, page):
         assert not page.exception, [e.value for e in page.exception]
         labels = " | ".join(str(getattr(t, "label", "")) for t in page.tabs)
-        for label in ("Agent Workspace", "Evidence Center", "Audit & Safety"):
+        for label in ("智能体工作区", "证据中心", "审计与安全"):
             assert label in labels, labels
 
     def test_agent_workspace_shows_frozen_dag(self, page):
         body = _body(page)
-        # "&" is HTML-escaped in rendered markup
-        for name in ("Glacier &amp; Geology Agent",
-                     "Weather &amp; Hydrology Agent",
-                     "Remote Sensing Agent", "Risk Synthesizer",
-                     "Critic · Reviewer"):
+        # G05C: visible agent labels are the frozen Chinese names
+        for name in ("冰川地质智能体", "气象水文智能体", "遥感解译智能体",
+                     "风险综合智能体", "评审智能体"):
             assert name in body, name
 
     def test_evidence_center_renders_provenance(self, page):
         body = _body(page)
         # real Case Pack evidence ids with phase + quality metadata
         assert "EV-" in body
-        assert "POST-EVENT" in body or "POST EVENT" in body
+        assert "灾后验证" in body
 
     def test_audit_safety_renders_safety_state(self, page):
         body = _body(page)
-        for control in ("Prompt Injection Guard", "Data Leakage Guard",
-                        "Post-event Leakage Guard", "Output Schema Validation",
-                        "External Actions Disabled"):
+        for control in ("提示词注入防护", "数据泄漏防护",
+                        "灾后信息泄漏防护", "输出结构校验",
+                        "外部操作已禁用"):
             assert control in body
 
     def test_no_secrets_rendered(self, page):
@@ -551,12 +553,12 @@ class TestIntelligenceCenter:
 
 class TestOverviewRegression:
     def test_overview_still_default_and_functional(self, at):
-        at.sidebar.radio[0].set_value("总览 · Overview").run()
+        at.sidebar.radio[0].set_value("总览").run()
         assert not at.exception, [e.value for e in at.exception]
         body = _body(at)
-        assert "Main Map" in body
-        assert "Current Risk" in body
-        assert "Agent Collaboration" in body
+        assert "主地图" in body
+        assert "当前风险" in body
+        assert "智能体协作" in body
 
 
 # ═══ Shared design-system consistency across the four pages ═════════════════
@@ -572,6 +574,6 @@ class TestDesignConsistency:
     def test_risk_note_constant_shared(self):
         from frontend.components import RISK_INDEX_NOTE
 
-        assert RISK_INDEX_NOTE == "Risk Index — not event probability"
+        assert RISK_INDEX_NOTE == "风险指数不是事件发生概率"
         assert theme.risk_color("HIGH") == theme.RED
         assert theme.agent_status_color("SKIPPED") != theme.RED

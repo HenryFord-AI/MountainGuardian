@@ -8,10 +8,13 @@ reusable card functions — no heavy frontend framework).
 Every component is presentation-only: it receives already-assembled
 view-model values and never touches the risk engine or data layer.
 
-Frozen language rules enforced here (doc 05 §11, §62–§63):
-  * Risk Index is always annotated "not event probability";
-  * risk vocabulary is only LOW / MODERATE / ELEVATED / HIGH;
-  * agent status vocabulary follows doc 05 §14 colors, SKIPPED ≠ FAILED.
+Frozen language rules enforced here (doc 05 §11, §62–§63, doc 08):
+  * Risk Index is always annotated 风险指数不是事件发生概率;
+  * risk vocabulary keeps the frozen four bands — only their display
+    labels are Chinese (低 / 中等 / 较高 / 高);
+  * agent status vocabulary follows doc 05 §14 colors, SKIPPED ≠ FAILED;
+  * all display localization goes through frontend.display (presentation
+    mapping only — underlying enum values are never altered).
 """
 
 from __future__ import annotations
@@ -20,9 +23,18 @@ import html
 from typing import Optional
 
 from frontend import theme
+from frontend.display import (
+    critic_check_label,
+    direction_label,
+    phase_label,
+    quality_label,
+    risk_label,
+    status_label,
+)
 
-# The mandatory scientific annotation next to every Risk Index display.
-RISK_INDEX_NOTE = "Risk Index — not event probability"
+# The mandatory scientific annotation next to every Risk Index display
+# (doc 08 §6 — exact frozen disclaimer wording).
+RISK_INDEX_NOTE = "风险指数不是事件发生概率"
 
 
 def esc(value) -> str:
@@ -77,17 +89,17 @@ _TREND_ARROWS = {
 def trend_line(direction: Optional[str], delta: Optional[float]) -> str:
     if not direction or direction == "NO_HISTORY":
         return (
-            f'<div class="mg-trend-row"><span class="mg-trend-k">Trend</span>'
+            f'<div class="mg-trend-row"><span class="mg-trend-k">趋势</span>'
             f'<span style="color:{theme.TEXT_DIM};font-size:12px;">'
-            f'no prior scan to compare</span></div>'
+            f'暂无历史扫描可比较</span></div>'
         )
     arrow, color = _TREND_ARROWS.get(direction, ("→", theme.TEXT_DIM))
     delta_txt = ""
     if delta is not None:
         delta_txt = f" {delta:+.2f}"
-    label = direction.title()
+    label = direction_label(direction)
     return (
-        f'<div class="mg-trend-row"><span class="mg-trend-k">Trend</span>'
+        f'<div class="mg-trend-row"><span class="mg-trend-k">趋势</span>'
         f'<span style="color:{color};font-weight:700;">{arrow}{esc(delta_txt)} '
         f'{esc(label)}</span></div>'
     )
@@ -105,12 +117,12 @@ def risk_card_html(
     """The Overview main risk visual: big number + level + trend + coverage.
 
     Displays stored engine output only. The mandatory note
-    "Risk Index — not event probability" is always rendered.
+    风险指数不是事件发生概率 is always rendered.
     """
     if risk_index_rounded is None:
         return empty_state(
-            "No Risk Watch scan result yet. The Current Risk Index appears "
-            "here after the first completed scan (Risk Watch page)."
+            "尚无风险扫描结果。完成第一次风险扫描（风险监测页）后，"
+            "当前风险指数将显示在此处。"
         )
     color = theme.risk_color(risk_level)
     req_txt = (
@@ -128,11 +140,11 @@ def risk_card_html(
     <span class="mg-metric" style="color:{color};">{risk_index_rounded:.2f}</span>
     <span style="font-size:15px;color:{theme.TEXT_DIM};font-weight:600;">/ 100</span>
   </div>
-  <div style="margin:8px 0 12px 0;">{chip(risk_level or "UNKNOWN", color)}</div>
-  <div class="mg-trend-row"><span class="mg-trend-k">Evidence</span>
-    <span>Required <b>{esc(req_txt)}</b> &nbsp;·&nbsp; Optional <b>{esc(opt_txt)}</b></span></div>
+  <div style="margin:8px 0 12px 0;">{chip(risk_label(risk_level) if risk_level else "未知", color)}</div>
+  <div class="mg-trend-row"><span class="mg-trend-k">证据</span>
+    <span>必需 <b>{esc(req_txt)}</b> &nbsp;·&nbsp; 可选 <b>{esc(opt_txt)}</b></span></div>
   {trend_line(direction, delta)}
-  <div class="mg-trend-row"><span class="mg-trend-k">Last Updated</span>
+  <div class="mg-trend-row"><span class="mg-trend-k">最近更新</span>
     <span>{updated}</span></div>
   <div class="mg-metric-note">{esc(RISK_INDEX_NOTE)}</div>
 </div>"""
@@ -140,16 +152,18 @@ def risk_card_html(
 
 def drivers_html(top_drivers: tuple) -> str:
     """Top risk drivers list (label + contribution points, engine-sourced)."""
+    from frontend.display import driver_label
+
     if not top_drivers:
-        return empty_state("Driver contributions appear with the next completed scan.")
+        return empty_state("驱动因素贡献将在下一次完成扫描后显示。")
     rows = []
     for i, (label, points, dtype) in enumerate(top_drivers, start=1):
         pts = f"{points:.2f}" if isinstance(points, (int, float)) else "—"
-        tag = "static" if str(dtype).upper() == "STATIC" else "dynamic"
+        tag = "静态" if str(dtype).upper() == "STATIC" else "动态"
         rows.append(
             f'<div class="mg-trend-row">'
             f'<span><span style="color:{theme.TEXT_DIM};">{i:02d}</span> '
-            f'{esc(label)}</span>'
+            f'{esc(driver_label(label))}</span>'
             f'<span style="white-space:nowrap;"><span style="color:{theme.TEXT_DIM};'
             f'font-size:11px;">{esc(tag)}</span> &nbsp;<b>+{esc(pts)}</b></span></div>'
         )
@@ -159,8 +173,9 @@ def drivers_html(top_drivers: tuple) -> str:
 # ─── Agent collaboration (doc 05 §13–§14) ────────────────────────────────────
 
 def agent_card_html(card) -> str:
-    """One agent tile: name, status, confidence, evidence count — nothing
-    else. Chain-of-thought / prompts / hidden reasoning are never shown."""
+    """One agent tile: Chinese name, status, confidence, evidence count —
+    nothing else. Chain-of-thought / prompts / hidden reasoning are never
+    shown. The English class name / ID never appears as the visible label."""
     if card.key == "critic":
         color = theme.critic_color(card.status)
     else:
@@ -170,23 +185,22 @@ def agent_card_html(card) -> str:
     if card.evidence_count is None:
         ev_txt = "—"
     else:
-        ev_txt = f"{card.evidence_count} evidence"
-    status_txt = card.status.replace("_", " ").title()
+        ev_txt = f"{card.evidence_count} 条证据"
+    status_txt = status_label(card.status)
     extra = (
         f'<div style="font-size:10.5px;color:{theme.TEXT_DIM};margin-top:4px;">'
         f'{esc(card.extra)}</div>' if card.extra else ""
     )
     fallback = (
         f' <span style="color:{theme.ORANGE};font-size:10px;font-weight:700;">'
-        f'FALLBACK</span>' if card.fallback_used else ""
+        f'回退</span>' if card.fallback_used else ""
     )
     return f"""
 <div class="mg-agent-card{ai_cls}">
-  {dot(color)} <span class="mg-agent-name">{esc(card.name_en)}</span>{fallback}
-  <div class="mg-agent-zh">{esc(card.name_zh)}</div>
+  {dot(color)} <span class="mg-agent-name">{esc(card.name_zh)}</span>{fallback}
   <div class="mg-agent-meta">
     <span style="color:{color};font-weight:700;">● {esc(status_txt)}</span><br/>
-    Confidence <b>{esc(conf)}</b> · {esc(ev_txt)}
+    置信度 <b>{esc(conf)}</b> · {esc(ev_txt)}
   </div>
   {extra}
 </div>"""
@@ -228,7 +242,7 @@ def ring_gauge_html(
     small = max(9, size // 11)
     return (
         f'<svg width="{size}" height="{size}" viewBox="0 0 {size} {size}" '
-        f'role="img" aria-label="index {clamped:.1f} of 100">'
+        f'role="img" aria-label="风险指数 {clamped:.1f} / 100">'
         f'<circle cx="{size/2}" cy="{size/2}" r="{r}" fill="none" '
         f'stroke="rgba(120,160,200,0.16)" stroke-width="{stroke}"/>'
         f'<circle cx="{size/2}" cy="{size/2}" r="{r}" fill="none" '
@@ -252,9 +266,11 @@ def kv_row(key: str, value: str, color: Optional[str] = None) -> str:
 
 
 def timeline_html(stages: tuple) -> str:
-    """PRE-EVENT / EVENT / POST-EVENT separation strip (doc 05 §17).
+    """灾前阶段 / 事件发生 / 灾后验证 separation strip (doc 05 §17).
 
     stages: (label_en, label_zh, when_txt, color, note) tuples in order.
+    label_en is the frozen internal stage identifier — G05C renders the
+    Chinese label as the visible key; the English identifier never shows.
     """
     parts = []
     for i, (label_en, label_zh, when, color, note) in enumerate(stages):
@@ -262,7 +278,7 @@ def timeline_html(stages: tuple) -> str:
             parts.append('<div class="mg-stage-join">→</div>')
         parts.append(
             f'<div class="mg-stage" style="border-color:{color}44;">'
-            f'<div class="mg-stage-k" style="color:{color};">{esc(label_en)}</div>'
+            f'<div class="mg-stage-k" style="color:{color};">{esc(phase_label(label_en))}</div>'
             f'<div class="mg-stage-v">{esc(when)}</div>'
             f'<div class="mg-stage-n">{esc(label_zh)}{(" · " + esc(note)) if note else ""}</div>'
             f'</div>'
@@ -279,12 +295,19 @@ def evidence_row_html(
     quality: str,
     note: str = "",
 ) -> str:
-    """One provenance row (doc 05 §18/§35): id, source, date, phase, quality."""
+    """One provenance row (doc 05 §18/§35): id, source, date, phase, quality.
+
+    The Evidence ID stays verbatim (auditability); phase / quality / type
+    are localized through the frozen presentation mapping.
+    """
+    from frontend.display import evidence_type_label
+
+    phase_zh = phase_label(phase)
     phase_color = {
-        "PRE-EVENT": theme.CYAN,
-        "EVENT": theme.ORANGE,
-        "POST-EVENT": theme.PURPLE,
-    }.get(phase.upper(), theme.TEXT_DIM)
+        "灾前阶段": theme.CYAN,
+        "事件发生": theme.ORANGE,
+        "灾后验证": theme.PURPLE,
+    }.get(phase_zh, theme.TEXT_DIM)
     qual_color = {
         "GOOD": theme.GREEN, "LIMITED": theme.ORANGE,
         "STALE": theme.ORANGE, "MISSING": theme.RED,
@@ -293,12 +316,12 @@ def evidence_row_html(
     return (
         f'<div class="mg-ev-row"><div>'
         f'<span class="mg-ev-id">{esc(evidence_id)}</span> '
-        f'<b>{esc(type_label)}</b>'
+        f'<b>{esc(evidence_type_label(type_label))}</b>'
         f'<div class="mg-ev-meta">{esc(source)} · {esc(observed)}</div>'
         f'{note_html}'
         f'</div><div style="text-align:right;white-space:nowrap;">'
-        f'{chip(phase, phase_color, small=True)} '
-        f'{chip(quality or "—", qual_color, small=True)}</div></div>'
+        f'{chip(phase_zh, phase_color, small=True)} '
+        f'{chip(quality_label(quality) if quality else "—", qual_color, small=True)}</div></div>'
     )
 
 
@@ -309,18 +332,19 @@ def coverage_row_html(
     quality: str = "",
     note: str = "",
 ) -> str:
-    """Data-coverage source row (doc 05 §31) — honest availability states."""
+    """Data-coverage source row (doc 05 §31) — honest availability states,
+    localized through the frozen presentation mapping."""
     qual_color = {
         "GOOD": theme.GREEN, "LIMITED": theme.ORANGE,
         "STALE": theme.ORANGE, "MISSING": theme.RED,
     }.get(quality.upper(), theme.TEXT_DIM)
-    qual = f' {chip(quality, qual_color, small=True)}' if quality else ""
+    qual = f' {chip(quality_label(quality), qual_color, small=True)}' if quality else ""
     note_html = f'<div class="mg-ev-meta">{esc(note)}</div>' if note else ""
     return (
         f'<div class="mg-ev-row"><div><b>{esc(label)}</b>'
         f'{note_html}</div>'
         f'<div style="text-align:right;white-space:nowrap;">'
-        f'<span style="color:{color};font-weight:650;">{esc(status)}</span>{qual}'
+        f'<span style="color:{color};font-weight:650;">{esc(status_label(status))}</span>{qual}'
         f'</div></div>'
     )
 
@@ -329,6 +353,9 @@ def scan_steps_html(steps: tuple) -> str:
     """Six-step workflow lifecycle (doc 05 §26), real stage timestamps only.
 
     steps: (num, label_zh, label_en, state, ts_txt); state ∈ DONE/PENDING/FAILED.
+    label_en is the frozen internal step identifier — only the Chinese label
+    is rendered (doc 08: orchestration stage identifiers are not changed and
+    not shown as visible English labels).
     """
     colors = {"DONE": theme.GREEN, "PENDING": theme.TEXT_DIM,
               "FAILED": theme.RED, "RUNNING": theme.CYAN}
@@ -343,7 +370,6 @@ def scan_steps_html(steps: tuple) -> str:
             f'<div class="mg-step-n" style="color:{color};border-color:{color}66;'
             f'background:{color}12;">{mark}</div>'
             f'<div class="mg-step-zh">{esc(zh)}</div>'
-            f'<div class="mg-step-en">{esc(en)}</div>'
             f'<div class="mg-step-ts">{esc(ts_txt)}</div></div>'
         )
     return f'<div class="mg-steps">{"".join(parts)}</div>'
@@ -362,6 +388,7 @@ def critic_panel_html(
 
     issues: (check_id, severity, message) tuples; checks: (check_id, ok)
     tuples of the frozen programmatic review dimensions. No prose walls.
+    Check IDs stay machine-readable in parentheses; visible labels Chinese.
     """
     color = theme.critic_color(review_result)
     rows = []
@@ -369,7 +396,7 @@ def critic_panel_html(
         mark, mcolor = ("✓", theme.GREEN) if ok else ("!", theme.ORANGE)
         rows.append(
             f'<div class="mg-issue-row"><span style="color:{mcolor};'
-            f'font-weight:700;">{mark}</span> {esc(check_id.replace("_", " ").title())}'
+            f'font-weight:700;">{mark}</span> {esc(critic_check_label(check_id))}'
             f'</div>'
         )
     for check_id, sev, message in issues:
@@ -377,7 +404,7 @@ def critic_panel_html(
             sev, theme.TEXT_DIM)
         rows.append(
             f'<div class="mg-issue-row"><span style="color:{sev_color};'
-            f'font-weight:700;">!</span> [{esc(sev)}] {esc(message)}'
+            f'font-weight:700;">!</span> [{esc(status_label(sev))}] {esc(message)}'
             f' <span class="mg-ev-meta">({esc(check_id)})</span></div>'
         )
     for note in limitations:
@@ -390,7 +417,7 @@ def critic_panel_html(
             f'<div class="mg-issue-row"><span style="color:{theme.ORANGE};'
             f'font-weight:700;">→</span> {esc(note)}</div>'
         )
-    body = "".join(rows) or empty_state("No critic records in this run.")
+    body = "".join(rows) or empty_state("本轮运行无评审记录。")
     att = (
         f'<div class="mg-metric-note">{esc(attestation)}</div>' if attestation else ""
     )
@@ -399,8 +426,8 @@ def critic_panel_html(
         f'<div style="display:flex;justify-content:space-between;'
         f'align-items:center;gap:8px;margin-bottom:8px;">'
         f'<span style="font-weight:750;color:{color};letter-spacing:0.06em;">'
-        f'{esc(review_result.replace("_", " "))}</span>'
-        f'{chip(("severity " + severity) if severity else "review", color, small=True)}'
+        f'{esc(status_label(review_result))}</span>'
+        f'{chip(("严重性 " + status_label(severity)) if severity else "评审", color, small=True)}'
         f'</div>{body}{att}</div>'
     )
 
@@ -409,14 +436,18 @@ def safety_rows_html(rows: tuple) -> str:
     """Descriptive safety-control indicators (doc 03 §外围 Guard, doc 06 §76).
 
     rows: (name, state, color, detail). Read-only by construction — the UI
-    exposes no control that can disable any guard.
+    exposes no control that can disable any guard. Visible names/states are
+    localized through the frozen presentation mapping; control IDs and the
+    underlying guard logic are unchanged.
     """
+    from frontend.display import safety_control_label
+
     parts = []
     for name, state, color, detail in rows:
         parts.append(
-            f'<div class="mg-ev-row"><div><b>{esc(name)}</b>'
+            f'<div class="mg-ev-row"><div><b>{esc(safety_control_label(name))}</b>'
             f'<div class="mg-ev-meta">{esc(detail)}</div></div>'
-            f'<div style="white-space:nowrap;">{chip(state, color, small=True)}'
+            f'<div style="white-space:nowrap;">{chip(status_label(state), color, small=True)}'
             f'</div></div>'
         )
     return "".join(parts)
@@ -425,7 +456,7 @@ def safety_rows_html(rows: tuple) -> str:
 def table_html(headers: tuple, rows: tuple) -> str:
     """Compact dark table (audit log / provenance, doc 05 §37)."""
     if not rows:
-        return empty_state("No records available.")
+        return empty_state("暂无记录。")
     head = "".join(f"<th>{esc(h)}</th>" for h in headers)
     body = []
     for row in rows:

@@ -65,30 +65,32 @@ html, body { background: #07111F; margin: 0; }
 
 _LEGEND_HTML = """
 <div class="mg-legend">
-  <b>Legend</b><br/>
-  <span style="color:#37D7E8;">●</span> Monitoring point (representative)<br/>
-  <span style="color:#37D7E8;">○</span> Coordinate uncertainty<br/>
-  <span style="color:#FFB454;">┄</span> Hazard-path direction (schematic)
+  <b>图例</b><br/>
+  <span style="color:#37D7E8;">●</span> 监测点（代表性坐标）<br/>
+  <span style="color:#37D7E8;">○</span> 坐标不确定性范围<br/>
+  <span style="color:#FFB454;">┄</span> 灾害路径方向（示意图）
 </div>
 """
 
 _POINT_STYLE = {
-    "source_zone": dict(color=theme.CYAN, label="Source Zone · 源区 5200 m"),
-    "port_zone": dict(color=theme.CYAN, label="Jilong Port · 吉隆口岸 1800 m"),
+    "source_zone": dict(color=theme.CYAN, label="源区 · 5200 m"),
+    "port_zone": dict(color=theme.CYAN, label="吉隆口岸 · 1800 m"),
 }
 
 
 def _point_tooltip(point_id: str, name: str, elevation_m: Optional[float],
                    uncertainty_km: Optional[float]) -> str:
+    from frontend.display import point_name_label
+
     elev = f"{elevation_m:.0f} m" if elevation_m is not None else "—"
     unc = (
-        f"±{uncertainty_km:.0f} km (representative, not surveyed)"
-        if uncertainty_km is not None else "representative coordinate"
+        f"±{uncertainty_km:.0f} 公里（代表性坐标，非实测）"
+        if uncertainty_km is not None else "代表性坐标"
     )
     return (
-        f"<b>{name}</b><br/>"
-        f"Elevation: {elev}<br/>"
-        f"Coordinate: {unc}"
+        f"<b>{point_name_label(name)}</b><br/>"
+        f"海拔：{elev}<br/>"
+        f"坐标：{unc}"
     )
 
 
@@ -135,11 +137,9 @@ def build_overview_map(
                        [float(dst[2]), float(dst[3])]],
             color=theme.ORANGE, weight=2.5, opacity=0.85, dash_array="7 7",
             tooltip=folium.Tooltip(
-                "<b>Documented hazard-path direction — SCHEMATIC</b><br/>"
-                "Straight connector between the two representative monitoring "
-                "points (source zone ≈10 km east of the port along the "
-                "documented ice-avalanche / debris-flow path). "
-                "Not surveyed geometry.",
+                "<b>已记录的灾害路径方向 — 示意图（非实测几何）</b><br/>"
+                "两个代表性监测点之间的直线连接（源区位于口岸以东约 10 公里，"
+                "沿已记录的冰崩 — 碎屑流路径）。仅为方向示意，非实测几何。",
                 className="mg-tip", sticky=True,
             ),
         ).add_to(m)
@@ -154,8 +154,8 @@ def build_overview_map(
                 color=theme.CYAN, weight=1, opacity=0.45,
                 fill=True, fill_color=theme.CYAN, fill_opacity=0.05,
                 tooltip=folium.Tooltip(
-                    f"Coordinate uncertainty ±{uncertainty_km:.0f} km "
-                    f"(documented in region config)",
+                    f"坐标不确定性 ±{uncertainty_km:.0f} 公里"
+                    f"（区域配置中已记录）",
                     className="mg-tip", sticky=True,
                 ),
             ).add_to(m)

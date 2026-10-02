@@ -38,9 +38,9 @@ st.set_page_config(
         "Get Help": None,
         "Report a bug": None,
         "About": (
-            "山河守望者 MountainGuardian v1.0 — Research Prototype. "
-            "Geospatial Intelligence × AI Mission Control. "
-            "Research risk assessment — not an official disaster warning."
+            "山河守望者 MountainGuardian v1.0 — 研究原型。"
+            "地理空间智能 × AI 任务控制台。"
+            "研究性风险评估 — 非官方灾害告警。"
         ),
     },
 )
@@ -97,10 +97,10 @@ if page_key == "overview":
     else:
         with st.container(border=True):
             st.error(
-                "Region configuration or snapshot database could not be read. "
-                "The UI shows no data rather than fabricated values."
+                "无法读取区域配置或快照数据库。"
+                "界面不显示任何数据，而不是显示伪造数值。"
             )
-            st.caption(f"Detail: {type(vm_error).__name__}: {vm_error}")
+            st.caption(f"详情：{type(vm_error).__name__}: {vm_error}")
 elif page_key == "historical_replay":
     historical_replay.render()
 elif page_key == "risk_watch":

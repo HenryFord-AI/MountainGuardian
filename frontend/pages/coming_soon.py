@@ -1,11 +1,11 @@
 """
-MountainGuardian G04A – Honest placeholder for frozen navigation entries.
+MountainGuardian G04A – Honest placeholder for unknown navigation entries.
 
-The four main entries are frozen at G04A (doc 05 §4), but only Overview
-is implemented in this Gate. Historical Replay, Risk Watch and
-Intelligence Center are delivered in G04B. These pages must never fake
-content, fake data or fake scans — they state exactly what is coming and
-where the underlying capability already lives.
+The four main entries are frozen at G04A (doc 05 §4) and all four are
+fully implemented since G04B — this placeholder only renders for an
+unknown page key and must never fake content, fake data or fake scans.
+
+G05C (doc 08): visible text is Chinese.
 """
 
 from __future__ import annotations
@@ -16,25 +16,20 @@ from frontend.components import card_title, esc
 
 _PAGE_NOTES = {
     "historical_replay": (
-        "Historical Replay / Research Validation",
-        "Replays the frozen 2026-08-26 Jilong case using pre-event evidence "
-        "only: Pre/Event/Post timeline, agent reasoning cards, Baseline "
-        "Susceptibility result, Critic review and post-event validation. "
-        "The backend replay capability already exists — this page wires it "
-        "into the product UI in Gate G04B.",
+        "历史验证 / 研究验证",
+        "基于冻结的 2026-08-26 吉隆案例，仅使用灾前证据进行回放："
+        "灾前/事件/灾后时间线、智能体分析卡、基线易感性结果、"
+        "评审复核与灾后验证。",
     ),
     "risk_watch": (
-        "Risk Watch / 当前风险监测",
-        "One primary action: Run Risk Scan. Live scan progress, Current "
-        "Risk, 7-Day Outlook, Historical Trend, What Changed and Data "
-        "Coverage. The end-to-end scan workflow already exists — this page "
-        "exposes it in the product UI in Gate G04B.",
+        "风险监测",
+        "唯一主操作：执行风险扫描。实时扫描进度、当前风险、"
+        "未来7天风险展望、历史风险趋势、风险变化与数据覆盖。",
     ),
     "intelligence_center": (
-        "Intelligence Center / 智能中心",
-        "Three tabs: Agent Workspace, Evidence Center, Audit & Safety — "
-        "explaining how the multi-agent system works with full provenance. "
-        "Delivered in Gate G04B.",
+        "情报中心",
+        "三个标签页：智能体工作区、证据中心、审计与安全 — "
+        "完整溯源地解释多智能体系统如何工作。",
     ),
 }
 
@@ -44,17 +39,15 @@ def render(page_key: str) -> None:
         page_key, (page_key.replace("_", " ").title(), "")
     )
     with st.container(border=True):
-        st.markdown(card_title("Planned Page", accent="◇"), unsafe_allow_html=True)
+        st.markdown(card_title("规划页面", accent="◇"), unsafe_allow_html=True)
         st.markdown(
             f'<div class="mg-entry-title" style="font-size:17px;">{esc(title)}</div>',
             unsafe_allow_html=True,
         )
         st.markdown(
             '<div class="mg-empty" style="max-width:640px;">'
-            "This navigation entry is frozen in the v1.0 information "
-            "architecture. Its full UI implementation is scheduled in Gate "
-            "G04B — UI Product Pages. Nothing on this page is simulated: "
-            "no fake data, no fake scans.</div>",
+            "该导航入口在 v1.0 信息架构中冻结。本页面不模拟任何内容："
+            "无伪造数据、无伪造扫描。</div>",
             unsafe_allow_html=True,
         )
         if note:
