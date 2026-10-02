@@ -128,11 +128,12 @@ az webapp create -n mountainguardian-v1 -g rg-mountainguardian-v1 \
 ### 5.2 Steady state — GitHub Actions
 
 - Workflow: `.github/workflows/azure-deploy.yml`
-- Trigger: `push` to `main` (post-merge production deployment),
-  `workflow_dispatch` (manual), and — TEMPORARILY, for the initial safe
-  validation of the G05A path — `push` to `feature/azure-core-deploy`
-  (removed in the final commit before merge; this note is the required
-  documentation of that deviation).
+- Trigger: `push` to `main` (post-merge production deployment) and
+  `workflow_dispatch` (manual). A temporary `push` trigger on
+  `feature/azure-core-deploy` existed only for the initial safe validation
+  of the G05A deployment path (validation runs executed 2026-10-02, final
+  rerun succeeded end-to-end); it was removed in the last commit before
+  merge. This note is the required documentation of that deviation.
 - Tests always run first; deploy job has `needs: test` — failed tests block
   deployment.
 - Auth: `azure/login@v2` with OIDC federated credentials; repository

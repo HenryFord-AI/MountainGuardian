@@ -17,16 +17,15 @@
 #
 # Triggers:
 #   - push to main          → production deployment (intended steady state)
-#   - push to feature/azure-core-deploy
-#                           → TEMPORARY, initial safe validation of the G05A
-#                             deployment path only; removed before merge
-#                             (documented in deployment/RUNBOOK_G05A.md)
 #   - workflow_dispatch     → manual run
+# (A temporary feature-branch push trigger existed only for the initial safe
+#  validation of the G05A deployment path; removed before merge — documented
+#  in deployment/RUNBOOK_G05A.md §1.1/§5.2.)
 name: MountainGuardian CI/CD
 
 on:
   push:
-    branches: [main, feature/azure-core-deploy]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
