@@ -12,7 +12,9 @@
 GitHub (main) ──push──▶ GitHub Actions
                           checkout → Python 3.12 → pip install
                           → pip check → pytest (must pass)
-                          → zip runtime artifact → azure/webapps-deploy (Publish Profile)
+                          → zip runtime artifact
+                          → azure/login@v2 (OIDC federated credential)
+                          → azure/webapps-deploy (zip)
                           → smoke check ( /  and /_stcore/health )
                                      │
                                      ▼
@@ -23,6 +25,30 @@ GitHub (main) ──push──▶ GitHub Actions
 
 One Resource Group / one App Service Plan / one Web App. No slots, no
 autoscale, no container, no managed identity, no Key Vault (v1.0 frozen).
+
+### 1.1 Documented G05A deviation — deployment credential
+
+The frozen spec (doc 06 §54) mandates the Azure Web App Publish Profile in
+`AZURE_WEBAPP_PUBLISH_PROFILE`. During G05A execution (2026-10) this method
+was verified **unusable on the current Azure platform**:
+
+- every ARM API (`publishxml`, `list-publishing-profiles`,
+  `list-publishing-credentials`) returns `REDACTED` instead of the password;
+- SCM (`*.scm.azurewebsites.net`) rejects basic-auth zipdeploy with HTTP 401
+  even for freshly-set deployment-user credentials;
+- Azure's own provisioning tool `az webapp deployment github-actions add`
+  fails with `Not Found` when fetching the publish profile.
+
+Commander-approved minimal replacement: **OIDC federated credentials**.
+An AAD app registration (`mountainguardian-gh-deploy`) trusts ID tokens from
+`https://token.actions.githubusercontent.com` for subjects
+`repo:HenryFord-AI/MountainGuardian:ref:refs/heads/main` (and, temporarily,
+the G05A feature branch). Its service principal holds **Website Contributor
+on `rg-mountainguardian-v1` only** (least privilege). GitHub stores only the
+three non-secret identifiers (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
+`AZURE_SUBSCRIPTION_ID`) as repository secrets; no Azure password or client
+secret exists anywhere. This stays inside the frozen architecture: no
+Key Vault, no managed identity for the app runtime, no infrastructure change.
 
 ## 2. Resource Inventory
 
@@ -101,14 +127,16 @@ az webapp create -n mountainguardian-v1 -g rg-mountainguardian-v1 \
 ### 5.2 Steady state — GitHub Actions
 
 - Workflow: `.github/workflows/azure-deploy.yml`
-- Trigger: `push` to `main` (post-merge production deployment) and
-  `workflow_dispatch` (manual; used for the initial safe validation of the
-  G05A path — documented deviation, feature branches never auto-deploy).
+- Trigger: `push` to `main` (post-merge production deployment),
+  `workflow_dispatch` (manual), and — TEMPORARILY, for the initial safe
+  validation of the G05A path — `push` to `feature/azure-core-deploy`
+  (removed in the final commit before merge; this note is the required
+  documentation of that deviation).
 - Tests always run first; deploy job has `needs: test` — failed tests block
   deployment.
-- Auth: repository secret `AZURE_WEBAPP_PUBLISH_PROFILE`
-  (obtained via `az webapp deployment list-publishing-profiles --xml`,
-  piped into `gh secret set` without ever printing).
+- Auth: `azure/login@v2` with OIDC federated credentials; repository
+  secrets `AZURE_CLIENT_ID` / `AZURE_TENANT_ID` / `AZURE_SUBSCRIPTION_ID`
+  (non-secret identifiers; see §1.1).
 - Artifact: tracked repository content zipped in CI, excluding `.git/`,
   `.github/`, `tests/`, `docs/`, `logs/`, venvs, `data/runtime/`, caches,
   `.env*`, `*.db*`, `*.publishsettings`, legacy Docker/cloudrun files.

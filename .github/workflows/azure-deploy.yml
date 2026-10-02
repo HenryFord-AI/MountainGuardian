@@ -3,20 +3,30 @@
 # Pipeline: checkout → Python 3.12 → install → pip check → pytest → deploy → smoke.
 # Deployment MUST NOT run if tests fail (enforced by `needs: test`).
 #
-# Authentication: Azure Web App Publish Profile stored in the repository
-# secret AZURE_WEBAPP_PUBLISH_PROFILE (doc 06 §54). This workflow NEVER
-# contains or echoes the DeepSeek API key or any secret value (doc 06 §20/§55).
+# Authentication: Azure AD OIDC federated credentials (azure/login@v2).
+# NOTE (documented G05A deviation): the frozen spec's Publish Profile method
+# is no longer usable on the Azure platform — publish credentials are
+# redacted by every ARM API and SCM basic auth rejects them (401), including
+# for Azure's own `az webapp deployment github-actions add` tooling. The
+# Commander approved OIDC federated credentials as the minimal replacement:
+# GitHub holds NO Azure password or client secret, only non-secret
+# identifiers (client/tenant/subscription id) plus an ID-token trust
+# restricted to this repository's main and release branches.
+# This workflow NEVER contains or echoes the DeepSeek API key or any
+# secret value (doc 06 §20/§55).
 #
 # Triggers:
 #   - push to main          → production deployment (intended steady state)
-#   - workflow_dispatch     → manual run (used for the initial safe validation
-#                             of the G05A deployment path; documented in
-#                             deployment/RUNBOOK_G05A.md)
+#   - push to feature/azure-core-deploy
+#                           → TEMPORARY, initial safe validation of the G05A
+#                             deployment path only; removed before merge
+#                             (documented in deployment/RUNBOOK_G05A.md)
+#   - workflow_dispatch     → manual run
 name: MountainGuardian CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: [main, feature/azure-core-deploy]
   workflow_dispatch:
 
 permissions:
@@ -53,6 +63,9 @@ jobs:
     name: Deploy to Azure App Service
     runs-on: ubuntu-latest
     needs: test
+    permissions:
+      contents: read
+      id-token: write # OIDC federated credential for azure/login@v2
     environment:
       name: production
       url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
@@ -103,11 +116,17 @@ jobs:
           ! unzip -l dist/deploy.zip | grep -q "\.env$"
           ! unzip -l dist/deploy.zip | grep -q "\.db$"
 
-      - name: Deploy to Azure Web App (Publish Profile)
+      - name: Azure login (OIDC federated credential)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: dist/deploy.zip
 
       - name: Smoke check (root + Streamlit health)
