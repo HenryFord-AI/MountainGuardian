@@ -66,9 +66,9 @@ jobs:
     permissions:
       contents: read
       id-token: write # OIDC federated credential for azure/login@v2
-    environment:
-      name: production
-      url: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net
+    # NOTE: no `environment:` block — a GitHub environment would change the
+    # OIDC token subject to :environment:production; the federated
+    # credentials trust ref-scoped subjects (main / release branches only).
     steps:
       - name: Checkout
         uses: actions/checkout@v4
