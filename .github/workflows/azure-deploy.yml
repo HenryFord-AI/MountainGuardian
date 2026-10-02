@@ -4,14 +4,17 @@
 # Deployment MUST NOT run if tests fail (enforced by `needs: test`).
 #
 # Authentication: Azure AD OIDC federated credentials (azure/login@v2).
-# NOTE (documented G05A deviation): the frozen spec's Publish Profile method
-# is no longer usable on the Azure platform — publish credentials are
-# redacted by every ARM API and SCM basic auth rejects them (401), including
-# for Azure's own `az webapp deployment github-actions add` tooling. The
-# Commander approved OIDC federated credentials as the minimal replacement:
-# GitHub holds NO Azure password or client secret, only non-secret
-# identifiers (client/tenant/subscription id) plus an ID-token trust
-# restricted to this repository's main and release branches.
+# NOTE (G05A Deployment Authentication Exception — APPROVED by Commander):
+# Azure Publish Profile remains a supported deployment method, but the
+# Publish Profile / basic-auth / SCM credential path was not operationally
+# usable in this Azure environment (XJTLU subscription SchoolSub-026) during
+# G05A — credential APIs returned redacted values and SCM rejected basic
+# auth. The exception applies ONLY to deployment authentication: GitHub
+# holds NO Azure password or client secret, only non-secret identifiers
+# (client/tenant/subscription id) plus an ID-token trust restricted to this
+# repository's main and release branches. It does not authorize broader
+# Managed Identity, IAM, infrastructure, or architecture expansion.
+# See deployment/RUNBOOK_G05A.md §1.1.
 # This workflow NEVER contains or echoes the DeepSeek API key or any
 # secret value (doc 06 §20/§55).
 #

@@ -86,9 +86,11 @@ class TestWorkflow:
         assert re.search(r"run:\s*pytest", workflow_text)
 
     def test_deploy_uses_oidc_federated_credentials(self, workflow_text):
-        # Documented G05A deviation: Publish Profile retired by the Azure
-        # platform; OIDC federated credentials approved by the Commander.
-        # The three Azure identifiers are non-secret repository variables.
+        # G05A Deployment Authentication Exception (Commander-approved):
+        # Publish Profile remains a supported Azure method but was not
+        # operationally usable in this environment; OIDC federation is used
+        # for deployment authentication only. The three Azure identifiers
+        # are non-secret repository variables.
         assert "azure/login@v2" in workflow_text
         assert "vars.AZURE_CLIENT_ID" in workflow_text
         assert "vars.AZURE_TENANT_ID" in workflow_text

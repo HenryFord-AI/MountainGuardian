@@ -26,30 +26,47 @@ GitHub (main) ──push──▶ GitHub Actions
 One Resource Group / one App Service Plan / one Web App. No slots, no
 autoscale, no container, no managed identity, no Key Vault (v1.0 frozen).
 
-### 1.1 Documented G05A deviation — deployment credential
+### 1.1 G05A Deployment Authentication Exception — APPROVED
 
 The frozen spec (doc 06 §54) mandates the Azure Web App Publish Profile in
-`AZURE_WEBAPP_PUBLISH_PROFILE`. During G05A execution (2026-10) this method
-was verified **unusable on the current Azure platform**:
+`AZURE_WEBAPP_PUBLISH_PROFILE`. **Azure Publish Profile remains a supported
+deployment method.** However, in the actual XJTLU Azure / App Service
+environment (subscription SchoolSub-026), the Publish Profile / basic-auth /
+SCM credential path was **not operationally usable during G05A**:
 
-- every ARM API (`publishxml`, `list-publishing-profiles`,
-  `list-publishing-credentials`) returns `REDACTED` instead of the password;
-- SCM (`*.scm.azurewebsites.net`) rejects basic-auth zipdeploy with HTTP 401
+- the ARM credential APIs available to this subscription
+  (`publishxml`, `list-publishing-profiles`, `list-publishing-credentials`)
+  returned `REDACTED` instead of the password;
+- SCM (`*.scm.azurewebsites.net`) rejected basic-auth zipdeploy with HTTP 401
   even for freshly-set deployment-user credentials;
-- Azure's own provisioning tool `az webapp deployment github-actions add`
-  fails with `Not Found` when fetching the publish profile.
+- Azure's provisioning tool `az webapp deployment github-actions add` failed
+  with `Not Found` when fetching the publish profile for this web app.
 
-Commander-approved minimal replacement: **OIDC federated credentials**.
-An AAD app registration (`mountainguardian-gh-deploy`) trusts ID tokens from
+These are observations about this environment at G05A execution time
+(2026-10), not a statement that Publish Profile is globally deprecated.
+
+Governance position (Commander-approved, closure remediation 2026-10-02):
+
+> **G05A Deployment Authentication Exception — APPROVED.**
+> GitHub Actions may use Azure OIDC federation instead of the originally
+> frozen Publish Profile because the Publish Profile/basic-auth path was not
+> operationally usable in the current Azure environment.
+> This exception applies only to deployment authentication.
+> It does not authorize broader Managed Identity, IAM, infrastructure, or
+> architecture expansion.
+
+Actual path: **OIDC federated credentials.** An AAD app registration
+(`mountainguardian-gh-deploy`) trusts ID tokens from
 `https://token.actions.githubusercontent.com` for subjects
-`repo:HenryFord-AI/MountainGuardian:ref:refs/heads/main` (and, temporarily,
-the G05A feature branch). Its service principal holds **Website Contributor
-on `rg-mountainguardian-v1` only** (least privilege). GitHub stores only the
-three non-secret identifiers (`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`,
-`AZURE_SUBSCRIPTION_ID`) as repository **variables** (non-secret by nature;
-no Azure password or client
-secret exists anywhere. This stays inside the frozen architecture: no
-Key Vault, no managed identity for the app runtime, no infrastructure change.
+`repo:HenryFord-AI/MountainGuardian:ref:refs/heads/main` (and, temporarily
+during validation, the G05A feature branch). Its service principal holds
+**Website Contributor on `rg-mountainguardian-v1` only** (least privilege).
+GitHub stores only the three non-secret identifiers (`AZURE_CLIENT_ID`,
+`AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`) as repository **variables**
+(non-secret by nature); no Azure password or client secret exists anywhere,
+and **GitHub Actions never holds the DeepSeek API key**. This stays inside
+the frozen architecture: no Key Vault, no managed identity for the app
+runtime, no infrastructure change.
 
 ## 2. Resource Inventory
 
