@@ -1,0 +1,2 @@
+# Shell scripts must keep LF endings for the Linux App Service runtime
+*.sh text eol=lf
