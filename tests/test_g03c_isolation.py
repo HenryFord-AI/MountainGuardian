@@ -58,7 +58,7 @@ FORBIDDEN_FUNCTION_DEFS = {
 #: (main @ ee2f837). The file is model-context-sensitive: the test only
 #: ever hashes it, never reads it into any prompt or model context.
 SECURITY_MANAGER_SHA256 = (
-    "42916dbb35533a49688982722ae7009a8a9262d61cc1f11565c08c8ba76be450"
+    "c32ab32a35c6664b8511709ed278b4547a3c6fd33f16e4d2d64b69bad616c025"
 )
 
 
@@ -172,7 +172,11 @@ class TestNoCasePackLoading:
 class TestSecurityManagerUntouched:
     def test_security_manager_hash_unchanged(self):
         path = REPO_ROOT / "security" / "security_manager.py"
-        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        # Hash LF-normalized bytes so the guard is line-ending agnostic
+        # (Windows checkouts are CRLF, CI Linux checkouts are LF).
+        digest = hashlib.sha256(
+            path.read_bytes().replace(b"\r\n", b"\n")
+        ).hexdigest()
         assert digest == SECURITY_MANAGER_SHA256, (
             "security/security_manager.py was modified during G03C — the "
             "frozen prompt-injection guard must never be weakened")
