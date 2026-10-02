@@ -6,7 +6,7 @@ enforced by reading source (AST / text), not by trusting comments.
 Frozen rules verified here (doc 05, doc 06 §71–§75):
   * design tokens match the frozen UI spec colors;
   * risk vocabulary LOW/MODERATE/ELEVATED/HIGH only; SKIPPED ≠ FAILED;
-  * "Risk Index — not event probability" is always rendered;
+  * 风险指数不是事件发生概率 (G05C disclaimer) is always rendered;
   * the UI layer never computes risk, never imports providers / agents /
     database / security, never writes snapshots;
   * G04B refinement: two narrow consume points are sanctioned (the Risk
@@ -180,17 +180,17 @@ class TestThemeTokens:
 class TestComponents:
     def test_risk_card_always_annotates_not_probability(self):
         html = components.risk_card_html(89.54, "HIGH")
-        assert "Risk Index — not event probability" in html
-        assert "89.54" in html and "HIGH" in html
+        assert "风险指数不是事件发生概率" in html
+        assert "89.54" in html and "高" in html
 
     def test_risk_card_empty_state_when_no_result(self):
         html = components.risk_card_html(None, None)
-        assert "not event probability" not in html
-        assert "No Risk Watch scan result yet" in html
+        assert "事件发生概率" not in html
+        assert "尚无风险扫描结果" in html
 
     def test_trend_line_no_history_is_honest(self):
         html = components.trend_line("NO_HISTORY", None)
-        assert "no prior scan to compare" in html
+        assert "暂无历史扫描可比较" in html
 
     def test_agent_card_shows_only_frozen_fields(self):
         from frontend.viewmodels import AgentCardVM
@@ -200,23 +200,32 @@ class TestComponents:
             evidence_count=9, evidence_ids=tuple(["E%d" % i for i in range(9)]),
         )
         html = components.agent_card_html(card)
-        assert "0.74" in html and "9 evidence" in html
-        assert "COMPLETED" in html.title() or "Completed" in html
+        assert "0.74" in html and "9 条证据" in html
+        assert "已完成" in html
+        # G05C: the visible agent label is Chinese — the English display
+        # name must not appear as the primary visible label
+        assert "冰川地质智能体" in html
+        assert "Glacier" not in html
         # never renders reasoning / prompts
         assert "prompt" not in html.lower()
 
     def test_sources_contain_no_forbidden_phrases(self):
         text = _ui_source_text()
-        for phrase in ("预警", "概率", "成功预测", "精准预测",
+        for phrase in ("预警", "成功预测", "精准预测",
                        "AI prediction confirmed", "official warning"):
             assert phrase not in text, phrase
 
-    def test_probability_only_in_disclaimer_context(self):
+    def test_probability_only_in_negated_disclaimer(self):
+        """G05C: the frozen disclaimer wording 风险指数不是事件发生概率
+        requires the term 发生概率 — it may ONLY appear negated (不是…).
+        Percentage-probability claims stay forbidden (doc 05 §62)."""
         text = _ui_source_text()
-        for m in re.finditer(r"probability", text, re.IGNORECASE):
-            ctx = text[max(0, m.start() - 40):m.end() + 10].lower()
-            assert "not event probability" in ctx or "notprobability" in ctx \
-                or "not an official" in ctx, ctx
+        for m in re.finditer("发生概率", text):
+            ctx = text[max(0, m.start() - 8):m.start()]
+            assert "不是" in ctx or "非" in ctx, \
+                text[max(0, m.start() - 20):m.end() + 10]
+        assert "风险指数不是事件发生概率" in text
+        assert not re.search(r"\d+(\.\d+)?\s*%[^。\n]{0,8}概率", text)
 
 
 # ═══ View models: read-only assembly, no fabrication ═════════════════════════
@@ -307,7 +316,7 @@ class TestOverviewViewModel:
         assert by_key["glacier_geology"].evidence_count == 2
         assert by_key["weather_hydrology"].status == "DEGRADED"
         assert by_key["remote_sensing"].status == "SKIPPED"
-        assert "no usable imagery" in by_key["remote_sensing"].extra
+        assert by_key["remote_sensing"].extra == "已跳过：无可用影像"
         assert by_key["synthesizer"].is_ai_layer is True
         assert by_key["synthesizer"].confidence == 0.65
         assert by_key["critic"].status == "NEEDS_REVISION"
@@ -370,9 +379,9 @@ class TestMapView:
         assert html is not None
         assert "leaflet" in html.lower()
         assert "Esri" in html
-        # schematic connector must disclose that it is schematic
-        assert "SCHEMATIC" in html
-        assert "Not surveyed geometry" in html
+        # schematic connector must disclose that it is schematic (G05C Chinese)
+        assert "示意图" in html
+        assert "非实测几何" in html
         # 2D only — no 3D / terrain exaggeration libraries
         assert "Cesium" not in html and "three.js" not in html.lower()
 
@@ -491,18 +500,18 @@ class TestAppSmoke:
         radios = at.sidebar.radio
         assert len(radios) == 1
         assert radios[0].options == [
-            "总览 · Overview",
-            "历史验证 · Historical Replay",
-            "风险监测 · Risk Watch",
-            "智能中心 · Intelligence Center",
+            "总览",
+            "历史验证",
+            "风险监测",
+            "情报中心",
         ]
 
     def test_overview_is_default_page(self, at):
-        assert at.sidebar.radio[0].value == "总览 · Overview"
+        assert at.sidebar.radio[0].value == "总览"
         body = " ".join(str(m.value) for m in at.markdown)
-        assert "Main Map" in body
-        assert "Current Risk" in body
-        assert "Agent Collaboration" in body
+        assert "主地图" in body
+        assert "当前风险" in body
+        assert "智能体协作" in body
 
     def test_product_pages_render_after_g04b(self, at):
         """G04A placeholders were replaced by real G04B product pages.
@@ -511,9 +520,9 @@ class TestAppSmoke:
         detailed per-page content assertions live in tests/test_g04b_ui.py.
         """
         for label, marker in (
-            ("历史验证 · Historical Replay", "Pre-event Evidence"),
-            ("风险监测 · Risk Watch", "Data Coverage"),
-            ("智能中心 · Intelligence Center", "Evidence Center"),
+            ("历史验证", "灾前证据"),
+            ("风险监测", "数据覆盖"),
+            ("情报中心", "证据中心"),
         ):
             at.sidebar.radio[0].set_value(label).run()
             assert not at.exception, [e.value for e in at.exception]

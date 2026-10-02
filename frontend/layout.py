@@ -6,9 +6,9 @@ Frozen information architecture (doc 05 §4–§7):
   header with page name / region on the left and Model Runtime,
   Last Scan, Data Sources, Active Agents on the right.
 
-Navigation is frozen at G04A; only Overview is fully implemented
-(remaining pages render an honest "not yet implemented" state — they
-are delivered in G04B and must never fake content).
+G05C (doc 08): the visible navigation / header language is Chinese —
+总览 / 历史验证 / 风险监测 / 情报中心. Page keys and the frozen
+navigation order are unchanged; only the display labels are localized.
 """
 
 from __future__ import annotations
@@ -19,22 +19,24 @@ import streamlit as st
 
 from frontend import theme
 from frontend.components import chip, esc, stat_block
+from frontend.display import status_label
 
-# Frozen v1.0 navigation (doc 05 §4). Order is part of the freeze.
+# Frozen v1.0 navigation (doc 05 §4, doc 08 §3). Order is part of the
+# freeze; visible labels are the approved Chinese competition labels.
 NAV_PAGES = (
-    ("overview", "总览 · Overview"),
-    ("historical_replay", "历史验证 · Historical Replay"),
-    ("risk_watch", "风险监测 · Risk Watch"),
-    ("intelligence_center", "智能中心 · Intelligence Center"),
+    ("overview", "总览"),
+    ("historical_replay", "历史验证"),
+    ("risk_watch", "风险监测"),
+    ("intelligence_center", "情报中心"),
 )
 NAV_KEYS = tuple(key for key, _ in NAV_PAGES)
 NAV_LABELS = tuple(label for _, label in NAV_PAGES)
 
 PAGE_TITLES = {
-    "overview": ("Overview", "总览"),
-    "historical_replay": ("Historical Replay", "历史验证 / Research Validation"),
-    "risk_watch": ("Risk Watch", "风险监测"),
-    "intelligence_center": ("Intelligence Center", "智能中心"),
+    "overview": "总览",
+    "historical_replay": "历史验证",
+    "risk_watch": "风险监测",
+    "intelligence_center": "情报中心",
 }
 
 _NAV_STATE_KEY = "mg_nav_page"
@@ -87,8 +89,8 @@ def render_sidebar(system_state: str = "NO DATA") -> str:
         st.markdown(
             f"""
 <div class="mg-nav-foot">
-  Research Prototype · v1.0<br/>
-  <span style="color:{color};font-weight:700;">● System {esc(system_state.title())}</span>
+  研究原型 · v1.0<br/>
+  <span style="color:{color};font-weight:700;">● 系统{esc(status_label(system_state))}</span>
 </div>""",
             unsafe_allow_html=True,
         )
@@ -117,8 +119,12 @@ def render_header(
     agents_txt: str = "—",
     system_state: str = "NO DATA",
 ) -> None:
-    """Global top header (doc 05 §7): page + region left, runtime stats right."""
-    title_en, title_zh = PAGE_TITLES.get(page_key, (page_key, ""))
+    """Global top header (doc 05 §7): page + region left, runtime stats right.
+
+    G05C: visible labels are Chinese; runtime values are localized through
+    the frozen presentation mapping (underlying enum values unchanged).
+    """
+    title_zh = PAGE_TITLES.get(page_key, page_key)
 
     runtime_color = {
         "CONNECTED": theme.GREEN,
@@ -132,21 +138,19 @@ def render_header(
         last_scan.replace("T", " ")[:16] + " UTC" if last_scan else "—"
     )
     stats = (
-        stat_block("Model Runtime", model_runtime.title(), runtime_color)
-        + stat_block("Last Scan", last_scan_txt)
-        + stat_block("Data Sources", str(data_sources) if data_sources is not None else "—")
-        + stat_block("Agents", agents_txt)
+        stat_block("模型运行状态", status_label(model_runtime), runtime_color)
+        + stat_block("最近扫描", last_scan_txt)
+        + stat_block("数据源", str(data_sources) if data_sources is not None else "—")
+        + stat_block("智能体", agents_txt)
     )
     st.markdown(
         f"""
 <div class="mg-header">
   <div>
-    <div class="mg-header-title">{esc(title_en)}
-      <span style="font-size:13px;color:{theme.TEXT_DIM};font-weight:500;margin-left:10px;">
-      {esc(title_zh)}</span>
-      &nbsp;{chip(system_state, state_color, small=True)}
+    <div class="mg-header-title">{esc(title_zh)}
+      &nbsp;{chip(status_label(system_state), state_color, small=True)}
     </div>
-    <div class="mg-header-region">⛰ {esc(region_label)} · 2D Geospatial Intelligence Console</div>
+    <div class="mg-header-region">⛰ {esc(region_label)} · 二维地理空间智能控制台</div>
   </div>
   <div class="mg-header-stats">{stats}</div>
 </div>""",

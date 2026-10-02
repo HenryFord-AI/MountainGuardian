@@ -103,6 +103,11 @@ html, body, [data-testid="stAppViewContainer"] {{
     font-family: {FONT_STACK};
 }}
 header[data-testid="stHeader"] {{ background: transparent; }}
+/* Streamlit framework chrome (Deploy button etc.) is not product UI —
+   G05C keeps the console free of framework English. */
+[data-testid="stToolbar"], [data-testid="stToolbarDeployButton"] {{
+    visibility: hidden;
+}}
 #MainMenu, footer, [data-testid="stStatusWidget"] {{ visibility: hidden; }}
 .block-container {{ padding-top: 0.6rem; padding-bottom: 1.5rem; max-width: 1600px; }}
 
@@ -166,7 +171,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     border-radius: {RADIUS}; padding: 14px 16px;
 }}
 .mg-card-title {{
-    font-size: 11.5px; font-weight: 700; letter-spacing: 0.18em;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.10em;
     text-transform: uppercase; color: {TEXT_DIM}; margin-bottom: 10px;
 }}
 .mg-card-title .mg-title-accent {{ color: {CYAN}; }}
@@ -230,6 +235,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     color: {CYAN}; background: rgba(55,215,232,0.07);
     border: 1px solid rgba(55,215,232,0.22); border-radius: 5px;
     padding: 1px 6px; margin: 2px 3px 2px 0;
+    max-width: 100%; word-break: break-all; white-space: normal;
 }}
 
 /* ══ States (doc 05 §52–§55) ═══════════════════════════════════════════ */
@@ -255,7 +261,8 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     font-size: 12.5px; font-variant-numeric: tabular-nums;
 }}
 .mg-trend-row:last-child {{ border-bottom: none; }}
-.mg-trend-k {{ color: {TEXT_DIM}; }}
+.mg-trend-k {{ color: {TEXT_DIM}; flex: 0 0 auto; white-space: nowrap;
+    margin-right: 10px; }}
 
 /* ══ Map ═══════════════════════════════════════════════════════════════ */
 .mg-map-frame {{
@@ -281,7 +288,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
     color: {TEXT_DIM}; font-size: 14px;
 }}
 .mg-stage-k {{
-    font-size: 11px; font-weight: 700; letter-spacing: 0.16em;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
     text-transform: uppercase;
 }}
 .mg-stage-v {{ font-size: 12.5px; color: {TEXT}; margin-top: 3px; font-weight: 600; }}

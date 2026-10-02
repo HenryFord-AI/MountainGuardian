@@ -60,15 +60,15 @@ EVIDENCE_CATEGORIES = (
 # exposes no control that can disable any of these protections.
 SAFETY_CONTROLS = (
     ("Prompt Injection Guard",
-     "agents/professional_base.py — 不可信证据文本隔离（quarantine）"),
+     "agents/professional_base.py — 不可信证据文本隔离"),
     ("Data Leakage Guard",
      "orchestration/context_builder.py — 灾后证据硬性排除于灾前上下文"),
     ("Post-event Leakage Guard",
-     "Critic 程序化检查 POST_EVENT_LEAKAGE（每次运行）"),
+     "评审智能体程序化检查 POST_EVENT_LEAKAGE（每次运行）"),
     ("Output Schema Validation",
      "schemas/agent_outputs.py + schemas/synthesis.py — 每次模型调用后校验"),
     ("External Actions Disabled",
-     "v1.0 Agent 无工具 / 无外部写入面（doc 03 §3）"),
+     "v1.0 智能体无工具 / 无外部写入面（文档 03 §3）"),
 )
 
 
@@ -179,7 +179,7 @@ def _agent_detail(key: str, name_en: str, name_zh: str, entry: dict,
         quarantined=tuple(audit.get("quarantined_evidence_ids") or ()),
         is_ai_layer=is_ai_layer,
         input_summary=str(audit.get("input_evidence_ids") and
-                          f"{len(audit.get('input_evidence_ids') or ())} evidence ids authorized"
+                          f"{len(audit.get('input_evidence_ids') or ())} 条授权证据"
                           or ""),
     )
 
@@ -302,14 +302,15 @@ def build_intelligence_viewmodel(
         ))
 
     # Audit rows: per-agent / AI-layer audit records of the latest run.
+    # G05C: visible agent names are Chinese (class names / IDs unchanged).
     audit_rows: list[tuple] = []
     for a in agents:
         audit_rows.append((
             str(row.get("created_at") or "")[:19].replace("T", " "),
             str(payload.get("run_id") or row.get("run_id") or "")[:24],
-            a.name_en, a.model_id, a.status,
-            f"{a.latency_ms} ms" if a.latency_ms is not None else "—",
-            "yes" if a.fallback_used else "no",
+            a.name_zh, a.model_id, a.status,
+            f"{a.latency_ms} 毫秒" if a.latency_ms is not None else "—",
+            "是" if a.fallback_used else "否",
         ))
 
     # Safety rows: frozen controls + per-run guard signals from this snapshot.
