@@ -1,0 +1,51 @@
+name: MountainGuardian Demo Capture POC
+
+on:
+  push:
+    branches:
+      - video/demo-capture
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout capture branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Playwright
+        run: |
+          python -m pip install --upgrade pip
+          pip install playwright
+          python -m playwright install --with-deps chromium
+
+      - name: Capture live MountainGuardian UI
+        run: python tools/demo_capture/poc_capture.py
+
+      - name: Show capture report
+        if: always()
+        run: |
+          echo '--- capture report ---'
+          if [ -f artifacts/demo_capture/capture_report.json ]; then
+            cat artifacts/demo_capture/capture_report.json
+          else
+            echo 'capture report missing'
+          fi
+
+      - name: Upload demo capture artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mountainguardian-demo-capture-poc
+          path: artifacts/demo_capture/
+          if-no-files-found: warn
+          retention-days: 7
