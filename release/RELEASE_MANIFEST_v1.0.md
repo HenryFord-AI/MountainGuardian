@@ -178,8 +178,8 @@ Persistence: verified twice — (a) UI reload shows the run as 最近扫描 and 
 ## 9. G05A deployment-authentication exception (approved)
 
 The frozen deployment spec (doc 06 §54) preferred the Azure Web App Publish Profile.
-During G05A that route was operationally unusable in the real XJTLU Azure
-environment (ARM credential APIs redacted, SCM basic-auth 401,
+During G05A that route was operationally unusable in the real deployment
+environment (the hosting organization's Azure tenant: ARM credential APIs redacted, SCM basic-auth 401,
 `az webapp deployment github-actions add` Not Found). The Commander approved a
 **narrow exception limited to deployment authentication**: GitHub Actions uses
 Azure OIDC federation (AAD app `mountainguardian-gh-deploy`, SP scoped Website
@@ -284,5 +284,33 @@ plus text dumps (`riskwatch_*_body.txt`, `intel_*.txt`) and result JSONs.
 Demo notes: the scan shows real stage progress; Remote Sensing may show 已跳过 and
 the Weather & Hydrology Agent may show a disclosed fallback badge — both are honest
 system states to narrate, not defects; never present C/O7 as probabilities.
+
+## 16. RC2 release-packaging amendment (documentation only)
+
+- RC1 engineering validation: **PASS** (Commander review 2026-10-03). The RC1 tag
+  `mountainguardian-v1.0-rc1` remains **immutable** (not moved, not overwritten).
+- Bounded amendment on `release/v1.0-rc` (tag `mountainguardian-v1.0-rc2`):
+  release packaging only — bilingual README replacement, root LICENSE restated as
+  MIT with retained upstream notice, new `THIRD_PARTY_NOTICES.md`, and this
+  manifest section. **No application code, frontend, agents, prompts, formulas,
+  scientific data, providers, SQLite, Azure, DNS, TLS, deployment auth or
+  production environment change**; no redeployment is required or triggered by
+  this amendment (documentation files are not part of the deployed app surface
+  beyond repo content, and CI/CD deploys the same application code).
+- Upstream/license audit: MountainGuardian derives from **RescueMind AI**
+  (https://github.com/BALADURGAG24/rescuemind-multi-agent), **MIT License**,
+  Copyright (c) 2026 BALADURGA G. Proven by byte-identical git blob SHAs between
+  the first commit (4623fbb) and upstream (LICENSE, agents/base_agent.py,
+  mcp/mcp_servers.py). MIT→MIT is compatible; the upstream copyright and
+  permission notices are retained in `LICENSE` (both copyright lines) and
+  `THIRD_PARTY_NOTICES.md`. Final license state: **MIT**.
+- Competition-facing identity remains anonymous: README/LICENSE/notices contain no
+  participant name, school, class, district, parent or teacher information, no
+  competition branding; repository visibility remains **Private** (public release
+  to be considered separately after competition review).
+- Screenshot provenance: the 10 primary screenshots were captured against
+  application code baseline e60bc15 and remain valid — this amendment does not
+  alter production application code or UI, so no recapture was performed and none
+  is required; the screenshots are unaltered.
 
 — End of manifest. No secrets, credentials or sensitive values are contained herein.
