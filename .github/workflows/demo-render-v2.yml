@@ -1,0 +1,84 @@
+name: MountainGuardian Competition Demo Render v2
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - video/demo-capture
+    paths:
+      - tools/demo_capture/render_v2_part1.sh
+      - tools/demo_capture/render_v2_part2.sh
+      - .github/workflows/demo-render-v2.yml
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout video branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install capture and render dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Capture live MountainGuardian product
+        run: |
+          rm -rf artifacts/demo_capture
+          python tools/demo_capture/poc_capture.py
+
+      - name: Download chapter voiceovers
+        env:
+          VO1: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/f6a99775-91df-43e6-999a-14b25d719d7d/MG_VO_01_Hook.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMWMzZGRmZGFhYTRlNjk0MyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTE1Nzg1MH0.Xw-0q3t_KkdxAz7DZ1GsK71Xv_UgTQ_RbgMJwNINsb4"
+          VO2: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/b0f72b70-bba2-4a86-914b-1dfabed9fc8b/MG_VO_02_Reveal.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZTg3MmZlN2U2YzYwYzUxOCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTE3MTk2Nn0.zCrd3CE2zPRUC2B59CddQIL-y09AySb43HYsH0knTqo"
+          VO3: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/f00bb8e9-49c9-44d0-b23a-4ae1c3987a71/MG_VO_03_Historical.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDIwMmZhNmJkMTM4MWExOSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTEyNTYxMX0.Q__FXrmogJ5FPYUKLYYlss3P1kXYxRZ2Xf2Tpt_mSHM"
+          VO4: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/821957a6-38a9-4d08-a7dd-a4c5e82bef6a/MG_VO_04_Risk_Watch.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiODBjMjM5YmMwYzE4YzZkYyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTE5ODAxMn0.ww4ckkKq0CQibnHA7-h49abm-w-XKzIq7C7_hVLP_z8"
+          VO5: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/d804c5de-21ab-4f2e-85e5-eb3955ec3353/MG_VO_05_Trust.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMmFlZjZkYjNjYTNhMDA1YSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTE3NTg1OX0.Rv5fQiMHk74NvTG_ijjwZ3LkOJw1ye3My_yICX8X_8o"
+          VO6: "https://dnznrvs05pmza.cloudfront.net/text_to_speech/317363f7-64ff-4c5b-b0e2-729b57b6c9f1/MG_VO_06_Meaning.mp3?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYTNmOTYwODZjY2JiY2NjMiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5MTEyNTM4Mn0.OCnhIgp-ISTd1a_m965uTAiD-krqIfF0AKQCVX6mF0Y"
+        run: |
+          mkdir -p artifacts/demo_voice
+          curl -L --fail --retry 3 "$VO1" -o artifacts/demo_voice/vo1.mp3
+          curl -L --fail --retry 3 "$VO2" -o artifacts/demo_voice/vo2.mp3
+          curl -L --fail --retry 3 "$VO3" -o artifacts/demo_voice/vo3.mp3
+          curl -L --fail --retry 3 "$VO4" -o artifacts/demo_voice/vo4.mp3
+          curl -L --fail --retry 3 "$VO5" -o artifacts/demo_voice/vo5.mp3
+          curl -L --fail --retry 3 "$VO6" -o artifacts/demo_voice/vo6.mp3
+
+      - name: Assemble ASCII-safe renderer
+        run: |
+          cat tools/demo_capture/render_v2_part1.sh tools/demo_capture/render_v2_part2.sh > /tmp/render_v2.sh
+          chmod +x /tmp/render_v2.sh
+          bash -n /tmp/render_v2.sh
+
+      - name: Render final demo
+        run: |
+          rm -rf artifacts/final_demo
+          /tmp/render_v2.sh
+
+      - name: Show QA report
+        if: always()
+        run: |
+          cat artifacts/final_demo/QA_REPORT.txt || true
+          ls -lh artifacts/final_demo || true
+
+      - name: Upload final competition demo
+        uses: actions/upload-artifact@v4
+        with:
+          name: MountainGuardian-Competition-Demo-v0.1
+          path: |
+            artifacts/final_demo/MountainGuardian_Competition_Demo_v0.1.mp4
+            artifacts/final_demo/QA_REPORT.txt
+            artifacts/final_demo/subtitles.srt
+          if-no-files-found: error
+          retention-days: 7
