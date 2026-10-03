@@ -1,8 +1,7 @@
 # MountainGuardian v1.0 — Release Manifest (RELEASE_MANIFEST_v1.0.md)
 
 Authoritative release record for Gate G06 (Release Candidate & Competition Freeze).
-Status: **RC1 pending Commander acceptance** — this manifest is frozen content for the
-`release/v1.0-rc` branch and the final `mountainguardian-v1.0` tag.
+Status: **FINAL — v1.0 competition release under Competition Freeze** (see §17).
 
 ## 1. Product & release purpose
 
@@ -312,5 +311,47 @@ system states to narrate, not defects; never present C/O7 as probabilities.
   application code baseline e60bc15 and remain valid — this amendment does not
   alter production application code or UI, so no recapture was performed and none
   is required; the screenshots are unaltered.
+
+## 17. Final release record (post-merge finalization)
+
+- **Commander RC2 acceptance:** 2026-10-03 — RC2 approved for final release;
+  final visual review of the 10 primary production screenshots PASS.
+  RC1 (`mountainguardian-v1.0-rc1` → 0f894de) and RC2
+  (`mountainguardian-v1.0-rc2` → f84dffd) tags remain immutable.
+- **Release PR:** #17 (`release/v1.0-rc` → `main`), merged with merge commit
+  **c645ba80d1d914f237002d33643c0bbc9ebaeec9**; `main == origin/main` at that commit.
+- **Final regression on merged main:** `pip check` clean;
+  `pytest` **694 passed, 10 skipped, 0 failed** (skips = documented opt-in
+  live-network tests).
+- **CI/CD:** GitHub Actions `MountainGuardian CI/CD` run **37094792840**
+  (head c645ba8) — **success**, deployed to Azure App Service via the approved
+  G05A OIDC deployment-authentication exception (Publish Profile not restored).
+- **Post-merge production verification (read-only, no new scan):**
+  https://mountainguardian.cn 200; /_stcore/health 200 ok;
+  https://www.mountainguardian.cn 200 with valid TLS;
+  https://mountainguardian-v1.azurewebsites.net 200. Four entrances smoked
+  (总览/历史验证/风险监测/情报中心): Chinese-first nav intact, no traceback, no
+  broken route, no horizontal overflow, zero identity hits, zero secret material
+  in DOM; Historical Replay disclaimers intact (91/100 = 基线易感性指数,
+  不是事件发生概率, no "91%"); accepted Risk Watch runs still persisted and
+  visible; Open-Meteo 可用; DeepSeek 已连接 (deepseek-flash); safety controls
+  (外部操作已禁用 etc.) intact.
+- **Final release tag:** `mountainguardian-v1.0`, annotated
+  "MountainGuardian v1.0 competition release", pointing at the main merge commit
+  of this finalization change — i.e. the exact commit containing this finalized
+  manifest (self-identified by tag name; the exact hash is recorded in the G06
+  Final Release & Competition Freeze Report and verifiable via
+  `git rev-list -n1 mountainguardian-v1.0`). Release code baseline: e60bc15
+  (application code); release metadata lineage: RC1 0f894de → RC2 f84dffd →
+  release merge c645ba8 → finalization merge (tagged).
+- **Competition Freeze:** in force from the push of `mountainguardian-v1.0`.
+  Only genuine release-blocker fixes permitted thereafter; the online system,
+  the 10 primary screenshots, the competition report and any demo video
+  correspond to this frozen release.
+- **Anonymity & visibility:** competition-facing presentation remains anonymous
+  (no participant/school/class/district/parent/teacher identity, no competition
+  branding); GitHub repository remains **PRIVATE** during competition review;
+  public open-source publication and creator attribution deferred to a separate
+  post-competition decision.
 
 — End of manifest. No secrets, credentials or sensitive values are contained herein.
