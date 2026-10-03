@@ -35,12 +35,62 @@ jobs:
           rm -rf artifacts/demo_capture
           python tools/demo_capture/poc_capture.py
 
+      - name: Enforce non-overlapping narration timeline
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tools/demo_capture/render_v03.sh')
+          s=p.read_text(encoding='utf-8')
+          old="""items=[]; idx=0
+          for section_start,sents in sections:
+              cursor=section_start
+              for sent in sents:
+                  idx+=1; p=out/f'v{idx:02d}.mp3'
+                  subprocess.run(['edge-tts','--voice','zh-CN-XiaoxiaoNeural','--rate=+2%','--text',sent,'--write-media',str(p)],check=True)
+                  d=dur(p)
+                  items.append((p,cursor,d,sent))
+                  cursor += d+0.16
+          """
+          new="""items=[]; idx=0; global_end=0.0
+          for section_start,sents in sections:
+              cursor=max(section_start, global_end+0.22)
+              for sent in sents:
+                  idx+=1; p=out/f'v{idx:02d}.mp3'
+                  subprocess.run(['edge-tts','--voice','zh-CN-XiaoxiaoNeural','--rate=+2%','--text',sent,'--write-media',str(p)],check=True)
+                  d=dur(p)
+                  items.append((p,cursor,d,sent))
+                  cursor += d+0.16
+                  global_end=cursor-0.16
+          """
+          if old not in s:
+              raise SystemExit('narration scheduling block not found')
+          p.write_text(s.replace(old,new),encoding='utf-8')
+          PY
+
       - name: Render v0.3
         run: |
           chmod +x tools/demo_capture/render_v03.sh
           bash -n tools/demo_capture/render_v03.sh
           rm -rf artifacts/final_demo_v03
           tools/demo_capture/render_v03.sh
+
+      - name: Verify narration has no overlaps
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('artifacts/final_demo_v03/voice_timing.json')
+          data=json.loads(p.read_text(encoding='utf-8'))['items']
+          bad=[]
+          for a,b in zip(data,data[1:]):
+              end=a['start']+a['duration']
+              if b['start'] < end-0.01:
+                  bad.append((a['text'],b['text'],end,b['start']))
+          print('Narration overlap count:',len(bad))
+          if bad:
+              print(bad)
+              raise SystemExit(2)
+          PY
 
       - name: Show QA
         run: |
