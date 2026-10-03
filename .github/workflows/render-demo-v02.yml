@@ -1,0 +1,59 @@
+name: Render MountainGuardian Demo v0.2
+
+on:
+  push:
+    branches:
+      - video/demo-capture
+    paths:
+      - '.github/workflows/render-demo-v02.yml'
+      - 'tools/demo_capture/render_v02.sh'
+      - 'tools/demo_capture/poc_capture.py'
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install capture and render dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ffmpeg fonts-noto-cjk
+          pip install playwright edge-tts
+          playwright install --with-deps chromium
+
+      - name: Capture live MountainGuardian product
+        run: |
+          rm -rf artifacts/demo_capture
+          python tools/demo_capture/poc_capture.py
+
+      - name: Render v0.2
+        run: |
+          chmod +x tools/demo_capture/render_v02.sh
+          bash -n tools/demo_capture/render_v02.sh
+          rm -rf artifacts/final_demo_v02
+          tools/demo_capture/render_v02.sh
+
+      - name: Show QA
+        run: |
+          cat artifacts/final_demo_v02/QA_REPORT.txt
+          ls -lh artifacts/final_demo_v02
+
+      - name: Upload final video
+        uses: actions/upload-artifact@v4
+        with:
+          name: MountainGuardian-Competition-Demo-v0.2
+          path: |
+            artifacts/final_demo_v02/MountainGuardian_Competition_Demo_v0.2.mp4
+            artifacts/final_demo_v02/QA_REPORT.txt
+            artifacts/final_demo_v02/subtitles.srt
+          retention-days: 7
+          if-no-files-found: error
